@@ -1,0 +1,720 @@
+/* =========================================================
+   CUSTOMER PORTAL - BASE
+========================================================= */
+
+.consumer-page-body {
+  padding-bottom: 42px;
+}
+
+.consumer-page-lead {
+  margin: 6px 0 0;
+  color: #7c89a0;
+  font-size: 11px;
+  line-height: 1.55;
+  max-width: 720px;
+}
+
+.consumer-page-body > .dashboard-main,
+.consumer-page-body > .container {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+
+.consumer-page-body .my-bookings-back {
+  color: var(--color-blue-light);
+}
+
+.consumer-page-body .dashboard-title {
+  margin-top: 8px;
+}
+
+.consumer-content {
+  min-width: 0;
+  min-height: 0;
+}
+
+
+/* =========================================================
+   CONSUMER SIDEBAR
+========================================================= */
+
+.consumer-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 260px;
+  height: 100vh;
+  height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  min-height: 0;
+
+  background: #ffffff;
+  border-right: 1px solid #e2e7ef;
+
+  z-index: 1000;
+}
+
+
+/* =========================================================
+   SIDEBAR HEADER
+========================================================= */
+
+.consumer-sidebar-header {
+  flex: 0 0 auto;
+  min-width: 0;
+
+  padding: 18px 16px;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+========================================================= */
+
+.consumer-sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 8px 10px 12px;
+
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+
+/* Chrome / Edge / Safari */
+
+.consumer-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consumer-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consumer-sidebar-nav::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.consumer-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   FALLBACK IF NAV IS DIRECT CHILD
+========================================================= */
+
+.consumer-sidebar > nav {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.consumer-sidebar > nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consumer-sidebar > nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consumer-sidebar > nav::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.consumer-sidebar > nav::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   SIDEBAR LINKS
+========================================================= */
+
+.consumer-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  min-height: 42px;
+
+  padding: 9px 11px;
+
+  border-radius: 10px;
+
+  color: #526176;
+  text-decoration: none;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.consumer-sidebar-nav a:hover {
+  background: #f3f6fa;
+  color: #173b8f;
+}
+
+.consumer-sidebar-nav a.active,
+.consumer-sidebar-nav a.is-active {
+  background: rgba(23, 59, 143, 0.09);
+  color: #173b8f;
+}
+
+
+/* =========================================================
+   SIDEBAR FOOTER
+========================================================= */
+
+.consumer-sidebar-footer {
+  flex: 0 0 auto;
+
+  padding: 10px 12px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #e7ebf1;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.consumer-sidebar-logout {
+  flex: 0 0 auto;
+
+  margin-top: auto;
+  padding: 8px 12px 14px;
+
+  background: #ffffff;
+}
+
+.consumer-sidebar-logout .btn {
+  width: 100%;
+  min-height: 40px;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+  border: 1px solid #e3e7ef;
+
+  color: #c5242c;
+
+  box-shadow: none;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.consumer-sidebar-logout .btn:hover {
+  border-color: #efb7b9;
+  background: #fff8f8;
+  color: #b51e26;
+}
+
+
+/* =========================================================
+   MAIN CUSTOMER CONTENT
+========================================================= */
+
+.consumer-content {
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  margin-left: 260px;
+
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.consumer-topbar {
+  position: sticky;
+  top: 0;
+
+  z-index: 18;
+
+  padding-top: 24px;
+  padding-bottom: 20px;
+
+  backdrop-filter: blur(14px);
+
+  background: rgba(246, 248, 252, 0.88);
+
+  border-bottom: 1px solid rgba(226, 231, 239, 0.72);
+}
+
+
+/* =========================================================
+   PAGE ANIMATION
+========================================================= */
+
+.consumer-page-body {
+  animation: portalPageIn 0.22s ease both;
+}
+
+@keyframes portalPageIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE NAVIGATION
+========================================================= */
+
+.consumer-mobile-nav {
+  display: none;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .consumer-sidebar {
+    width: 240px;
+  }
+
+  .consumer-content {
+    margin-left: 240px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE / TABLET NAV
+========================================================= */
+
+@media (max-width: 850px) {
+
+  /* -----------------------------------------
+     MOBILE NAV
+  ----------------------------------------- */
+
+  .consumer-mobile-nav {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    border-bottom: 1px solid #e2e7ef;
+
+    background: #ffffff;
+
+    scrollbar-width: none;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 19;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .consumer-mobile-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .consumer-mobile-nav-link {
+    flex: 0 0 auto;
+
+    padding: 8px 12px;
+
+    border-radius: 9px;
+
+    color: #667085;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    transition:
+      background 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .consumer-mobile-nav-link:hover {
+    background: #f4f6f9;
+    color: #173b8f;
+  }
+
+  .consumer-mobile-nav-link.is-active {
+    background: rgba(23, 59, 143, 0.09);
+    color: var(--color-blue-dark, #173b8f);
+  }
+
+  .consumer-mobile-nav-label {
+    display: none;
+  }
+
+
+  /* -----------------------------------------
+     MOBILE SIDEBAR
+  ----------------------------------------- */
+
+  .consumer-sidebar {
+    width: min(290px, 86vw);
+
+    height: 100vh;
+    height: 100dvh;
+
+    max-height: 100vh;
+    max-height: 100dvh;
+
+    overflow: hidden;
+
+    box-shadow: 8px 0 28px rgba(15, 23, 42, 0.08);
+  }
+
+
+  /* -----------------------------------------
+     MOBILE SIDEBAR SCROLL
+  ----------------------------------------- */
+
+  .consumer-sidebar-nav {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-bottom: 20px;
+
+    touch-action: pan-y;
+
+    overscroll-behavior: contain;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  /* -----------------------------------------
+     MOBILE CONTENT
+  ----------------------------------------- */
+
+  .consumer-content {
+    margin-left: 0;
+
+    width: 100%;
+
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+
+  /* -----------------------------------------
+     TOPBAR
+  ----------------------------------------- */
+
+  .consumer-topbar {
+    position: static;
+  }
+
+
+  /* -----------------------------------------
+     PAGE
+  ----------------------------------------- */
+
+  .consumer-page-body {
+    padding-bottom: 28px;
+  }
+
+
+  /* -----------------------------------------
+     LOGOUT
+  ----------------------------------------- */
+
+  .consumer-sidebar-logout {
+    display: block;
+
+    flex: 0 0 auto;
+
+    margin-top: 0;
+
+    padding: 8px 12px 14px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE SMALL
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .consumer-sidebar {
+    width: min(280px, 88vw);
+
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .consumer-sidebar-header {
+    padding: 15px 13px;
+  }
+
+  .consumer-sidebar-nav {
+    padding: 7px 8px 16px;
+  }
+
+  .consumer-sidebar-nav a {
+    min-height: 40px;
+
+    padding: 8px 10px;
+
+    font-size: 11.5px;
+  }
+
+  .consumer-sidebar-logout {
+    padding: 8px 10px 12px;
+  }
+
+  .consumer-sidebar-logout .btn {
+    min-height: 38px;
+    font-size: 11.5px;
+  }
+
+  .consumer-topbar {
+    padding-top: 18px;
+    padding-bottom: 16px;
+  }
+
+  .consumer-page-body {
+    padding-bottom: 24px;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 420px) {
+
+  .consumer-sidebar {
+    width: 86vw;
+  }
+
+  .consumer-mobile-nav {
+    padding: 8px 10px;
+  }
+
+  .consumer-mobile-nav-link {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .consumer-sidebar-nav a {
+    gap: 8px;
+
+    min-height: 38px;
+
+    padding: 7px 9px;
+
+    font-size: 11px;
+  }
+
+  .consumer-sidebar-logout .btn {
+    min-height: 37px;
+    border-radius: 9px;
+  }
+}
+
+
+/* =========================================================
+   LANDSCAPE MOBILE
+========================================================= */
+
+@media (max-width: 850px) and (orientation: landscape) {
+
+  .consumer-sidebar {
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .consumer-sidebar-nav {
+    overflow-y: auto;
+  }
+
+  .consumer-sidebar-header {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .consumer-sidebar-logout {
+    padding-top: 6px;
+    padding-bottom: 8px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .consumer-page-body {
+    animation: none;
+  }
+
+  .consumer-sidebar-nav a,
+  .consumer-mobile-nav-link,
+  .consumer-sidebar-logout .btn {
+    transition: none;
+  }
+}
+
+
+/* =========================================================
+   PREVENT HORIZONTAL OVERFLOW
+========================================================= */
+
+.consumer-page-body,
+.consumer-content,
+.consumer-sidebar {
+  max-width: 100%;
+}
+
+.consumer-page-body *,
+.consumer-content *,
+.consumer-sidebar * {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   SAFE LONG TEXT HANDLING
+========================================================= */
+
+.consumer-sidebar-nav a,
+.consumer-sidebar-nav span,
+.consumer-sidebar-nav div {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+
+/* =========================================================
+   KEEP SIDEBAR SCROLLABLE EVEN WITH MANY ITEMS
+========================================================= */
+
+.consumer-sidebar-nav > * {
+  max-width: 100%;
+}
+
+.consumer-sidebar-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consumer-sidebar-nav li {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   SCROLLBAR - FIREFOX
+========================================================= */
+
+.consumer-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+
+/* =========================================================
+   FINAL MOBILE OVERRIDE
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .consumer-sidebar {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+
+    overflow: hidden;
+  }
+
+  .consumer-sidebar-header {
+    flex: 0 0 auto;
+  }
+
+  .consumer-sidebar-nav {
+    flex: 1 1 0%;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .consumer-sidebar-logout,
+  .consumer-sidebar-footer {
+    flex: 0 0 auto;
+  }
+}
