@@ -1,0 +1,89 @@
+.booking-detail-main {
+  padding-bottom: 4rem;
+}
+
+.booking-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.booking-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.booking-detail-section {
+  padding: 1.25rem 1.5rem;
+}
+
+.booking-detail-section p {
+  margin: 0.25rem 0;
+}
+
+.booking-detail-muted {
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+}
+
+.booking-detail-demo-note {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: #a15c00;
+}
+
+.booking-refund-section {
+  margin-bottom: 1.5rem;
+}
+
+.bank-refund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  max-width: 24rem;
+}
+
+.bank-refund-form input {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+}
+
+.booking-detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.booking-cancel-confirm p {
+  margin-bottom: 0.75rem;
+}
+
+.complaint-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 30rem;
+}
+
+.complaint-form select,
+.complaint-form input,
+.complaint-form textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  font-family: inherit;
+}

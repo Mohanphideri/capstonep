@@ -1,0 +1,124 @@
+.vehicle-detail-page {
+  padding-top: 3rem;
+  padding-bottom: 4rem;
+}
+
+.vehicle-detail-back-link {
+  color: var(--color-marigold);
+}
+
+.vehicle-detail-layout {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.vehicle-detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin: 0.35rem 0 1.25rem;
+}
+
+.vehicle-detail-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.vehicle-detail-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-paper-line);
+}
+
+.vehicle-detail-gallery-fallback {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-ink-muted);
+  border: 1px dashed var(--color-paper-line);
+  border-radius: 0.75rem;
+}
+
+.vehicle-detail-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.vehicle-detail-specs p:last-child {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.vehicle-detail-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+}
+
+.vehicle-detail-amenities ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.75rem;
+}
+
+.vehicle-detail-amenities li {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-paper-line);
+  color: var(--color-ink-soft);
+}
+
+.vehicle-detail-description p,
+.vehicle-detail-policy p {
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.vehicle-detail-description {
+  margin-bottom: 1.75rem;
+}
+
+.vehicle-detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.vehicle-detail-whatsapp {
+  border-color: #1eb857;
+  color: #1eb857;
+}
+
+.vehicle-detail-enquire-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.vehicle-detail-enquire-copy {
+  color: var(--color-ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0 0 0.35rem;
+}
+
+@media (min-width: 960px) {
+  .vehicle-detail-layout {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.vehicle-detail-preserved-text{white-space:pre-line;line-height:1.8;}

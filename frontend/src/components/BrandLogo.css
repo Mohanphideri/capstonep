@@ -1,0 +1,68 @@
+.brand-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.brand-logo-image {
+  display: block;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+}
+
+.brand-logo-image-full {
+  width: 188px;
+  max-width: 100%;
+}
+
+.brand-logo-image-compact {
+  width: 154px;
+  max-width: 100%;
+}
+
+.brand-logo-image-icon {
+  width: 42px;
+  height: 34px;
+}
+
+.brand-logo-tagline {
+  margin-top: 2px;
+  padding-left: 3px;
+  color: #7a8398;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .brand-logo-image-full { width: 148px; }
+  .brand-logo-image-compact { width: 132px; }
+}
+
+.brand-logo-image-sidebar-icon {
+  display: none;
+  width: 42px;
+  height: 34px;
+}
+
+.admin-shell.is-collapsed .admin-brand .brand-logo-image-full { display: none; }
+.admin-shell.is-collapsed .admin-brand .brand-logo-image-sidebar-icon { display: block; }
+.admin-shell.is-collapsed .admin-brand { width: 42px; justify-content: center; }
+.consumer-brand .brand-logo-image-full { width: 186px; }
+.footer-brand .brand-logo-image-full { width: 204px; }
+.login-brand .brand-logo-image-full { width: 192px; }
+
+@media (max-width: 900px) {
+  .admin-shell.is-collapsed .admin-brand .brand-logo-image-full { display: block; }
+  .admin-shell.is-collapsed .admin-brand .brand-logo-image-sidebar-icon { display: none; }
+  .admin-shell.is-collapsed .admin-brand { width: auto; }
+}
