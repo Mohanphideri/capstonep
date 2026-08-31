@@ -1,0 +1,360 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap");
+
+:root {
+  --font-display: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* Light, modern, premium travel-booking theme. Component files
+     reference these variable names, not literal colors, so this
+     single block re-themes the whole site. */
+  --color-ink: #16213a;
+  --color-ink-soft: #4c5876;
+  --color-ink-muted: #7a8398;
+
+  --color-paper: #f7f9fc;
+  --color-paper-raised: #ffffff;
+  --color-paper-line: #e3e6ee;
+
+  /* Brand accent (teal/blue) — the single tasteful accent color */
+  --color-marigold: #0f9d8f;
+  --color-marigold-dark: #0b7d72;
+  --color-marigold-light: #e4f6f3;
+
+  --color-route: #2563eb;
+  --color-route-dark: #1d4ed8;
+
+  /* Deep blue — secondary brand color used across dashboards, links,
+     and admin badges. Previously hardcoded independently in a dozen+
+     files (#244a9b / #173b8f / #123277 / #3157a0); now a single source. */
+  --color-blue: #244a9b;
+  --color-blue-dark: #173b8f;
+  --color-blue-darker: #123277;
+  --color-blue-light: #3157a0;
+  --color-blue-tint: #eaf0ff;
+
+  /* Danger/signal red — reserved for destructive actions and true
+     warning states (delete, remove, landing-page badge). Never used
+     for ordinary hover/focus states — see --color-marigold for that. */
+  --color-danger: #dc2626;
+  --color-danger-dark: #c5262d;
+  --color-danger-light: #ef4444;
+
+  --glow-cyan: 0 6px 20px -6px rgba(201, 121, 26, 0.32);
+  --glow-violet: 0 6px 20px -6px rgba(37, 99, 235, 0.25);
+  --gradient-accent: linear-gradient(120deg, var(--color-blue) 0%, var(--color-blue-light) 100%);
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px -8px rgba(16, 24, 40, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-paper);
+  background-image:
+    radial-gradient(60rem 40rem at 85% -10%, rgba(15, 157, 143, 0.06), transparent 60%),
+    radial-gradient(50rem 35rem at -10% 10%, rgba(37, 99, 235, 0.05), transparent 55%);
+  background-attachment: fixed;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+::selection {
+  background-color: #0f9d8f33;
+}
+
+/* Visible keyboard focus everywhere, per accessibility floor */
+:focus-visible {
+  outline: 2px solid var(--color-marigold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Layout helpers ---------- */
+.container {
+  max-width: 72rem; /* 1152px, ~ tailwind max-w-6xl */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.container-sm {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.section {
+  padding: 4rem 0;
+}
+
+.section-bordered {
+  border-top: 1px solid var(--color-paper-line);
+  border-bottom: 1px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+}
+
+/* ---------- Typography helpers ---------- */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-marigold-dark);
+}
+
+.eyebrow-muted {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-muted);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.text-soft {
+  color: var(--color-ink-soft);
+}
+
+.text-muted {
+  color: var(--color-ink-muted);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.2s ease, background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-blue);
+  color: #ffffff;
+  box-shadow: 0 8px 20px -8px rgba(36, 74, 155, 0.35);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 26px -6px rgba(36, 74, 155, 0.42);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px -6px rgba(15, 157, 143, 0.45);
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: var(--color-ink);
+  border: 1px solid var(--color-paper-line);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-marigold);
+  color: var(--color-marigold-dark);
+  box-shadow: var(--glow-cyan);
+}
+
+.btn-outline:active {
+  transform: translateY(0);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Simple cards ---------- */
+.ticket {
+  position: relative;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-paper-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.ticket:hover {
+  border-color: var(--color-marigold);
+  box-shadow: var(--glow-cyan);
+}
+
+.ticket-stub { position: relative; }
+
+.ticket-stub::before { display: none; }
+
+@keyframes route-travel {
+  to {
+    stroke-dashoffset: -120;
+  }
+}
+
+.route-dash-animate {
+  animation: route-travel 6s linear infinite;
+}
+
+/* ---------- Grid helpers ---------- */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .grid-2-md,
+  .grid-3-md,
+  .grid-4-md {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final responsive hardening: every portal page must fit from small phones to large desktops. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { width: 100%; min-width: 0; overflow-x: hidden; }
+img, svg, video, iframe { max-width: 100%; }
+button, input, select, textarea { max-width: 100%; }
+.admin-form-grid, .admin-toolbar, .admin-page-actions, .dashboard-grid, .my-bookings-list, .public-feature-grid { min-width: 0; }
+.admin-form-grid > *, .admin-toolbar > *, .admin-page-actions > *, .dashboard-grid > *, .my-bookings-list > *, .public-feature-grid > * { min-width: 0; }
+
+@media (max-width: 1100px) {
+  .admin-content, .dashboard-main, .container { width: min(100%, calc(100% - 32px)); }
+}
+
+@media (max-width: 700px) {
+  .admin-content, .dashboard-main, .container { width: min(100%, calc(100% - 20px)); }
+  .admin-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .admin-toolbar, .admin-page-actions { align-items: stretch; }
+  .admin-toolbar-search { min-width: 0; width: 100%; }
+  .admin-form-actions { width: 100%; }
+  .admin-form-actions .btn { flex: 1 1 160px; }
+  .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-table { min-width: 620px; }
+  .ticket { max-width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .admin-content, .dashboard-main, .container { width: calc(100% - 16px); }
+  .admin-input, .admin-select, .admin-textarea { font-size: 16px; }
+  .btn { min-height: 42px; }
+}
+
+/* Portal typography: only navigation/status controls stay single-line. Long content can wrap naturally. */
+.admin-shell :is(.admin-side-link,.admin-nav-badge,.admin-sidebar-user-copy strong,.admin-sidebar-user-copy small,.btn,.badge,[class*="status"]),
+.consumer-shell :is(.consumer-nav-link,.consumer-support-link,.consumer-user-copy strong,.consumer-user-copy small,.btn,.badge,[class*="status"]) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* =========================================================
+   HOSPITAL-STYLE TRAVEL DESIGN SYSTEM
+   Visual-only layer: preserves existing routes, components and APIs.
+========================================================= */
+:root {
+  --color-ink: #172033;
+  --color-ink-soft: #53627a;
+  --color-ink-muted: #8c98ab;
+  --color-paper: #f6f8fc;
+  --color-paper-raised: #ffffff;
+  --color-paper-line: #e3e8f1;
+  --color-blue: #173b78;
+  --color-blue-dark: #102f62;
+  --color-blue-darker: #0b254f;
+  --color-blue-light: #315fa8;
+  --color-blue-tint: #edf3ff;
+  /* Marigold — a real Indian travel-brand accent (the flower used in
+     garlands and celebrations), not a generic SaaS teal/violet. */
+  --color-marigold: #c9791a;
+  --color-marigold-dark: #9c5c12;
+  --color-marigold-light: #fbf0df;
+  --shadow-sm: 0 1px 3px rgba(24, 42, 72, .05);
+  --shadow-md: 0 5px 16px rgba(24, 42, 72, .055);
+  --shadow-lg: 0 14px 34px rgba(24, 42, 72, .08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+body {
+  background: #f6f8fc;
+}
+
+.btn { border-radius: 9px; }
+.btn:hover { transform: translateY(-1px); }

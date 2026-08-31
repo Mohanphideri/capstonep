@@ -1,0 +1,48 @@
+/* =========================================================
+   FOOTER — Kuwarji Travels
+========================================================= */
+
+.footer{width:100%;border-top:1px solid #dbe4ee;background:#f8fafc;color:#172033}
+.footer .container{width:min(1180px,calc(100% - 40px));margin:0 auto;padding-top:3.5rem;padding-bottom:1.75rem}
+
+.footer-top{display:grid;grid-template-columns:1.6fr 1fr 1.1fr;gap:2.5rem;align-items:start}
+
+.footer-brand-col{min-width:0}
+.footer-logo{display:inline-flex}
+.footer-tagline{margin:1rem 0 1.1rem;max-width:26rem;font-size:.85rem;line-height:1.6;color:#5b6883}
+.footer-socials{display:flex;gap:.6rem}
+.footer-social-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid #dbe4ee;color:#172033;text-decoration:none;transition:.2s ease}
+.footer-social-icon:hover{background:#e0301e;color:#fff;border-color:#e0301e;transform:translateY(-2px)}
+
+.footer-heading{margin:0 0 1rem;font-size:.85rem;font-weight:800;color:#172033;letter-spacing:.01em}
+.footer-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.65rem}
+.footer-link{color:#5b6883;font-size:.85rem;text-decoration:none;line-height:1.4;transition:color .15s ease}
+.footer-link:hover{color:#e0301e}
+.footer-static{cursor:default}
+.footer-static:hover{color:#5b6883}
+
+.footer-contact-list li{display:flex;align-items:flex-start;gap:.55rem}
+.footer-contact-icon{display:inline-flex;color:#244a9b;margin-top:.1rem;flex:0 0 auto}
+
+/* Office locations + embedded maps */
+.footer-offices{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem;padding-top:2.25rem;border-top:1px solid #e3e9f2}
+.footer-office{min-width:0}
+.footer-office-header{margin-bottom:.75rem}
+.footer-office-title{margin:0;font-size:.88rem;font-weight:800;color:#172033}
+.footer-office-subtitle{margin:.2rem 0 0;font-size:.76rem;color:#7c879c}
+.footer-map-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid #dbe4ee;box-shadow:0 8px 22px rgba(18,45,84,.06);background:#e9eef5}
+.footer-map-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;filter:grayscale(.12) contrast(1.02)}
+
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-top:2.5rem;padding-top:1.4rem;border-top:1px solid #e3e9f2;font-size:.78rem;color:#7c879c}
+.footer-legal-links{display:flex;align-items:center;gap:.6rem}
+.footer-divider{color:#c5cede}
+
+@media (max-width:1000px){
+  .footer-top{grid-template-columns:1fr 1fr}
+  .footer-brand-col{grid-column:1 / -1}
+}
+@media (max-width:640px){
+  .footer-top{grid-template-columns:1fr}
+  .footer-offices{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+}

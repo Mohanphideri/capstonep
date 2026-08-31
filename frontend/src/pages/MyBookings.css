@@ -1,0 +1,130 @@
+.my-bookings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.my-bookings-tab {
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-paper-line);
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+}
+
+.my-bookings-tab.is-active {
+  border-color: var(--color-marigold);
+  color: var(--color-ink);
+  box-shadow: var(--glow-cyan);
+}
+
+.my-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-booking-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  flex-wrap: wrap;
+}
+
+.my-booking-card > div:first-child {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.my-booking-card p {
+  overflow-wrap: break-word;
+}
+
+.my-booking-vehicle {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0.15rem 0;
+}
+
+.my-booking-route,
+.my-booking-dates {
+  font-size: 0.82rem;
+  color: var(--color-ink-soft);
+  margin: 0.1rem 0;
+}
+
+.my-booking-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.my-booking-status {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-paper-line);
+  color: var(--color-ink-soft);
+}
+
+.my-booking-status.status-confirmed {
+  border-color: rgba(26, 127, 75, 0.35);
+  background: rgba(26, 127, 75, 0.08);
+  color: #1a7f4b;
+}
+
+.my-booking-status.status-cancelled,
+.my-booking-status.status-payment_failed {
+  border-color: rgba(178, 46, 56, 0.35);
+  background: rgba(178, 46, 56, 0.08);
+  color: #b22e38;
+}
+
+.my-booking-status.status-refund_pending,
+.my-booking-status.status-refund_processing {
+  border-color: rgba(201, 130, 10, 0.35);
+  background: rgba(201, 130, 10, 0.08);
+  color: #c9820a;
+}
+
+.my-booking-status.status-completed,
+.my-booking-status.status-booked {
+  border-color: rgba(26, 127, 75, 0.35);
+  background: rgba(26, 127, 75, 0.08);
+  color: #1a7f4b;
+}
+
+.my-booking-status.status-in_progress,
+.my-booking-status.status-booking {
+  border-color: rgba(36, 74, 155, 0.32);
+  background: rgba(36, 74, 155, 0.08);
+  color: var(--color-blue, #244a9b);
+}
+
+.my-booking-status.status-new {
+  border-color: rgba(15, 157, 143, 0.32);
+  background: rgba(15, 157, 143, 0.08);
+  color: var(--color-marigold-dark, #0b7d72);
+}
+
+.my-booking-status.status-draft,
+.my-booking-status.status-closed {
+  border-color: var(--color-paper-line);
+  background: transparent;
+  color: var(--color-ink-soft);
+}
+
+.my-booking-amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink);
+}

@@ -1,0 +1,281 @@
+.otp-card {
+  padding: 1.5rem;
+}
+
+.otp-card-padded {
+  padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .otp-card-padded {
+    padding: 2rem;
+  }
+}
+
+.otp-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.otp-subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-soft);
+}
+
+.otp-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.otp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.otp-heading {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.otp-lead {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-soft);
+}
+
+.otp-label {
+  display: block;
+}
+
+.otp-label-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+}
+
+.otp-phone-field {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper);
+  padding: 0.625rem 0.75rem;
+  transition: border-color 0.15s ease;
+}
+
+.otp-phone-field:focus-within {
+  border-color: var(--color-ink);
+}
+
+.otp-phone-prefix {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.otp-phone-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-ink);
+  outline: none;
+}
+
+.otp-captcha-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.otp-captcha-refresh {
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.otp-captcha-refresh:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.otp-captcha-row {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.otp-captcha-image {
+  display: flex;
+  width: 180px;
+  min-width: 180px;
+  height: 60px;
+  min-height: 60px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  background: var(--color-paper);
+}
+
+/*
+ * Wrapper around the SVG returned by:
+ *
+ * GET /api/captcha
+ *
+ * The backend returns:
+ *
+ * {
+ *   success: true,
+ *   svg: "<svg ...>"
+ * }
+ */
+.otp-captcha-svg {
+  display: block;
+  width: 180px;
+  height: 60px;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.otp-captcha-svg svg {
+  display: block;
+  width: 180px;
+  height: 60px;
+  max-width: 180px;
+  max-height: 60px;
+}
+
+.otp-captcha-placeholder {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.otp-captcha-input {
+  height: 60px;
+  min-width: 0;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper);
+  padding: 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-ink);
+  outline: none;
+}
+
+.otp-captcha-input:focus {
+  border-color: var(--color-ink);
+}
+
+.otp-hint {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.otp-error {
+  font-size: 0.875rem;
+  color: var(--color-route-dark);
+  margin: 0;
+}
+
+.otp-change-number {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.otp-digits-row {
+  margin-top: 0.375rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.otp-digit-input {
+  height: 3.5rem;
+  width: 3.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.otp-digit-input:focus {
+  border-color: var(--color-ink);
+}
+
+.otp-digit-input:disabled {
+  opacity: 0.5;
+}
+
+.otp-resend {
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.otp-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .otp-captcha-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .otp-captcha-image {
+    width: 180px;
+    min-width: 180px;
+  }
+
+  .otp-captcha-input {
+    width: 100%;
+  }
+
+  .otp-digits-row {
+    gap: 0.5rem;
+  }
+
+  .otp-digit-input {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+}
