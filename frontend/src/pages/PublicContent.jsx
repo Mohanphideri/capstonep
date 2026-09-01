@@ -21,19 +21,6 @@ export function FleetGallery() {
 }
 
 export function AboutPage() {
-  const aboutPhotos = [
-    { src: "/about-story.jpg", alt: "Kuwarji Travels coach ready for a journey", effect: "about-photo-in" },
-    { src: "/kuwarji-two-buses.jpg", alt: "Kuwarji Travels buses on the road", effect: "about-photo-slide" },
-  ];
-  const [photoIndex, setPhotoIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setPhotoIndex((index) => (index + 1) % aboutPhotos.length), 2000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const activePhoto = aboutPhotos[photoIndex];
-
   return <div className="page"><SiteBanner /><Navbar /><main className="public-page about-page">
     <section className="public-hero container about-hero">
       <p className="eyebrow">ABOUT KUWARJI TRAVELS</p>
@@ -54,14 +41,14 @@ export function AboutPage() {
           <div><strong>24×7</strong><span>Support access</span></div>
         </div>
       </div>
-      <div className="about-story-media about-photo-showcase" aria-live="polite">
-        <div className={`about-photo-frame ${activePhoto.effect}`} key={activePhoto.src}>
-          <img src={activePhoto.src} alt={activePhoto.alt} loading="eager" />
-          <div className="about-photo-overlay"><span>KUWARJI TRAVELS</span><strong>{photoIndex === 0 ? "Ready for the road" : "Travel together"}</strong></div>
+      <div className="about-story-media about-photo-collage">
+        <div className="about-photo-main">
+          <img src="/about1.jpg" alt="Kuwarji Travels coach ready for a journey" loading="eager" />
         </div>
-        <div className="about-photo-dots" aria-label="About photos">
-          {aboutPhotos.map((photo, index) => <button key={photo.src} type="button" className={index === photoIndex ? "active" : ""} aria-label={`Show about photo ${index + 1}`} onClick={() => setPhotoIndex(index)} />)}
+        <div className="about-photo-secondary">
+          <img src="/about2.jpg" alt="Kuwarji Travels buses on the road" loading="lazy" />
         </div>
+        <div className="about-photo-badge"><strong>Kuwarji Travels</strong><span>On the road with you</span></div>
       </div>
     </section>
 
@@ -93,7 +80,7 @@ export function FAQPage() {
   return <div className="page"><SiteBanner /><Navbar /><main className="public-page faq-reference-page">
     <section className="container faq-reference-hero"><div className="faq-question-mark">?</div><h1 className="public-title">Frequently Asked Questions</h1></section>
     <section className="container faq-reference-layout">
-      <aside className="faq-topic-nav" aria-label="FAQ categories">{["Journey","Reschedule","Cancellation & Refund","Lounge","Payment","Booking"].map((x,i)=><button type="button" key={x} className={i===0?"active":""}>{x}</button>)}</aside>
+      <aside className="faq-topic-nav" aria-label="FAQ categories">{["Journey","Reschedule","Cancellation & Refund","Payment","Booking"].map((x,i)=><button type="button" key={x} className={i===0?"active":""}>{x}</button>)}</aside>
       <div className="faq-reference-list">{loading?<p className="public-state">Loading FAQs…</p>:items.map(([q,a],i)=><details className="faq-reference-item" key={`${q}-${i}`} open={i<2}><summary><span>{q}</span><b>{i<2?"−":"+"}</b></summary><div className="faq-reference-answer">{a}</div></details>)}</div>
     </section>
   </main><Footer /></div>;

@@ -118,10 +118,10 @@ export default function Home() {
             <p>Reliable buses, cars and tempo travellers<br className="desktop-only" /> for local, outstation and group travel.</p>
             <div className="home-hero-modern-actions">
               <Link to="/trip-planner" className="home-modern-btn home-modern-btn-primary">
-                <Icon name="compass" size={16}/> Plan My Trip
+                Plan My Trip
               </Link>
               <Link to="/vehicles" className="home-modern-btn home-modern-btn-light">
-                <Icon name="bus" size={16}/> Search Vehicles
+                Search Vehicles
               </Link>
             </div>
           </div>

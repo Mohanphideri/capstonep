@@ -8,16 +8,25 @@ import "./FaqAccordion.css";
 const FALLBACK_FAQS = [
   { category: "Journey", question: "Is a driver included with every booking?", answer: "Yes. Every vehicle comes with an experienced, verified driver — you never need to arrange one separately." },
   { category: "Journey", question: "Can I get the driver's contact details before the trip?", answer: "Yes, driver and vehicle details are shared with you once your booking is confirmed." },
+  { category: "Journey", question: "Can I make stops along the way?", answer: "Yes. Let us know your planned stops when you submit your enquiry so we can factor them into the route and timing." },
+  { category: "Journey", question: "What if my journey runs longer than planned?", answer: "Extra hours or distance beyond what was booked are billed as per the applicable rate, which our team will confirm with you before continuing." },
+  { category: "Journey", question: "Are the vehicles clean and well-maintained?", answer: "Yes. All vehicles undergo regular servicing and cleaning checks before every trip." },
   { category: "Reschedule", question: "Can I reschedule my booking?", answer: "Rescheduling depends on vehicle availability and your booking terms. Contact support as early as possible so we can help." },
   { category: "Reschedule", question: "How do I request a new travel date?", answer: "Share your booking details and preferred new date with support. We will check availability and applicable charges." },
+  { category: "Reschedule", question: "Is there a charge for rescheduling?", answer: "Some bookings may involve a rescheduling fee depending on how close to the original date the change is made. Our team will confirm any charges upfront." },
+  { category: "Reschedule", question: "How far in advance should I request a reschedule?", answer: "The earlier you let us know, the more likely we can accommodate your new date without extra charges or availability issues." },
   { category: "Cancellation & Refund", question: "What if I need to cancel?", answer: "Each booking shows its own cancellation terms. Refund eligibility and amount depend on how close to the journey date you cancel." },
   { category: "Cancellation & Refund", question: "How long do refunds take to process?", answer: "Approved refunds are credited back to your original payment method, typically within 5-7 business days." },
-  { category: "Lounge", question: "Do you provide lounge access?", answer: "Lounge availability depends on the selected service and boarding location. Please check with our team before your journey." },
-  { category: "Lounge", question: "Can I ask about lounge facilities?", answer: "Yes. Our support team can confirm available lounge facilities and access rules for your route." },
+  { category: "Cancellation & Refund", question: "Who do I contact to cancel a booking?", answer: "Reach out to our support team with your booking details and we'll guide you through the cancellation process." },
+  { category: "Cancellation & Refund", question: "Will I get a full refund if Kuwarji Travels cancels the trip?", answer: "Yes. If a booking is cancelled from our end, you're entitled to a full refund of the amount paid." },
   { category: "Payment", question: "How is pricing calculated?", answer: "Pricing depends on the vehicle, trip type (local or outstation), distance and duration. Exact rates are shown before you confirm a booking." },
   { category: "Payment", question: "What payment methods are accepted?", answer: "We accept UPI, debit and credit cards, and net banking. All accepted methods are shown at checkout." },
+  { category: "Payment", question: "Do I need to pay the full amount upfront?", answer: "Payment terms vary by booking and are clearly shared with you before you confirm, so there are no surprises." },
+  { category: "Payment", question: "Will I get an invoice for my booking?", answer: "Yes. An invoice is generated for every confirmed booking and made available to you." },
   { category: "Booking", question: "Do I need an account to browse vehicles?", answer: "No. You can browse categories and vehicle details without logging in. You'll only need to verify your mobile number when you're ready to book." },
   { category: "Booking", question: "How does login work?", answer: "There's no password to remember. Enter your mobile number, and we send a one-time code by SMS to verify it's you." },
+  { category: "Booking", question: "How do I know if my booking is confirmed?", answer: "Once our team converts your enquiry into a booking, you'll be able to see the confirmed status and details in your customer portal." },
+  { category: "Booking", question: "Can I book a vehicle for a group trip or tour?", answer: "Yes. Kuwarji Travels handles local, outstation and group travel, including planned tours — just share your requirements in your enquiry." },
 ];
 
 export function FaqAccordion() {
