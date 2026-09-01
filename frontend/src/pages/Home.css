@@ -639,3 +639,59 @@
   align-items: flex-start !important;
   justify-content: flex-start !important;
 }
+
+/* ===== Shift hero copy up + put buttons side-by-side instead of stacked ===== */
+.home-hero-modern .home-hero-modern-inner.home-hero-modern-inner {
+  align-items: flex-start !important;
+  padding-top: clamp(3.25rem, 9vw, 6rem) !important;
+}
+.home-hero-modern-actions {
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+}
+
+/* ===== Extra hero motion: shimmering accent line, staggered button
+   entrance, and a soft pulsing glow on the primary CTA to draw the eye. ===== */
+.home-hero-typewriter-line:last-child {
+  background-size: 200% auto;
+  animation: kwHeroShimmer 3.6s linear infinite;
+}
+@keyframes kwHeroShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.home-hero-modern-actions .home-modern-btn {
+  opacity: 0;
+  animation: kwBtnIn .6s ease both;
+}
+.home-hero-modern-actions .home-modern-btn:nth-child(1) { animation-delay: .5s; }
+.home-hero-modern-actions .home-modern-btn:nth-child(2) { animation-delay: .68s; }
+@keyframes kwBtnIn {
+  from { opacity: 0; transform: translateY(14px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.home-modern-btn-primary { position: relative; }
+.home-modern-btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(215,40,30,.55);
+  animation: kwBtnPulse 2.6s ease-out infinite;
+  animation-delay: 1.4s;
+  pointer-events: none;
+}
+@keyframes kwBtnPulse {
+  0% { box-shadow: 0 0 0 0 rgba(215,40,30,.5); }
+  70% { box-shadow: 0 0 0 14px rgba(215,40,30,0); }
+  100% { box-shadow: 0 0 0 0 rgba(215,40,30,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-typewriter-line:last-child { animation: none !important; }
+  .home-hero-modern-actions .home-modern-btn { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .home-modern-btn-primary::after { animation: none !important; }
+}
