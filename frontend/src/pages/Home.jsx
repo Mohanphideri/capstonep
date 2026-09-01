@@ -15,32 +15,46 @@ import { HeroIllustration } from "../components/HeroIllustration.jsx";
 import { apiFetch } from "../api.js";
 import "./Home.css";
 
-const HERO_TAGLINE = "Your journey,\nour wheels.";
+const HERO_TAGLINES = [
+  "Your journey,\nour wheels.",
+  "Every mile,\na memory.",
+  "Comfort first,\nalways on time.",
+  "Trusted travel,\nfor every trip.",
+];
+const HERO_HOLD_MS = 3000;
 
 function HeroHeadline() {
+  const [taglineIndex, setTaglineIndex] = useState(0);
   const [text, setText] = useState("");
 
   useEffect(() => {
     let timer;
+    const current = HERO_TAGLINES[taglineIndex];
     let index = 0;
+    setText("");
 
-    const tick = () => {
+    const typeTick = () => {
       index += 1;
-      setText(HERO_TAGLINE.slice(0, index));
+      setText(current.slice(0, index));
 
-      if (index < HERO_TAGLINE.length) {
-        timer = setTimeout(tick, 75);
+      if (index < current.length) {
+        timer = setTimeout(typeTick, 75);
+      } else {
+        timer = setTimeout(() => {
+          setTaglineIndex((prev) => (prev + 1) % HERO_TAGLINES.length);
+        }, HERO_HOLD_MS);
       }
     };
 
-    timer = setTimeout(tick, 120);
+    timer = setTimeout(typeTick, taglineIndex === 0 ? 120 : 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [taglineIndex]);
 
   const lines = text.split("\n");
+  const fullLabel = HERO_TAGLINES[taglineIndex].replace("\n", " ");
 
   return (
-    <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE.replace("\n", " ")}>
+    <h1 className="home-hero-typewriter" aria-label={fullLabel}>
       {lines.map((line, i) => (
         <span className="home-hero-typewriter-line" key={i}>
           {line}
