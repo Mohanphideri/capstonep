@@ -430,14 +430,11 @@
 
 .home-hero-modern-copy {
   color: #fff;
+  margin-left: 0;
 }
 
 .home-hero-modern-kicker {
-  color: #fff;
-}
-
-.home-hero-modern-kicker span {
-  color: #fff;
+  display: none !important;
 }
 
 .home-hero-typewriter {
@@ -450,17 +447,8 @@
   font-weight: 850;
   text-shadow: 0 3px 20px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.45);
   animation: heroTypewriterIn .7s .12s both;
-}
-
-.home-hero-typewriter-cursor {
-  display: inline-block;
-  width: .055em;
-  height: .9em;
-  margin-left: .08em;
-  vertical-align: -.08em;
-  background: #fff;
-  border-radius: 2px;
-  animation: heroTypewriterCursor .8s steps(1,end) infinite;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .home-hero-modern-copy > p {
@@ -486,11 +474,6 @@
   }
 }
 
-@keyframes heroTypewriterCursor {
-  0%, 45% { opacity: 1; }
-  46%, 100% { opacity: 0; }
-}
-
 @media (max-width: 900px) {
   .home-hero-modern-media img {
     object-position: 64% center;
@@ -509,8 +492,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero-typewriter,
-  .home-hero-typewriter-cursor {
+  .home-hero-typewriter {
     animation: none !important;
   }
 }

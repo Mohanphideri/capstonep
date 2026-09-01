@@ -41,11 +41,18 @@ function drawHeader(doc, title, subtitle, business = {}) {
   doc.rect(0, 0, PAGE_WIDTH, 104).fill("#ffffff");
   doc.rect(0, 0, PAGE_WIDTH, 5).fill("#244a9b");
   try {
-    doc.image(BRAND_LOGO_PATH, 42, 32, { fit: [225, 42], align: "left", valign: "center" });
+    doc.image(BRAND_LOGO_PATH, 42, 26, { fit: [200, 38], align: "left", valign: "center" });
   } catch {
     doc.fillColor("#244a9b").font("Helvetica-Bold").fontSize(18).text(business.name || "Kuwarji Travels", 46, 28);
   }
-  doc.font("Helvetica").fontSize(8.5).fillColor("#6f7890").text(subtitle || "Travel & vehicle rental", 46, 91);
+
+  const address = business.address || "Kuwarji Travels, India";
+  const contactBits = [business.phone ? `Phone: ${business.phone}` : null, business.email ? `Email: ${business.email}` : null].filter(Boolean);
+  doc.font("Helvetica").fontSize(8.5).fillColor("#6f7890").text(subtitle || "Travel & vehicle rental", 46, 74);
+  doc.font("Helvetica").fontSize(7.6).fillColor("#7a8398").text(address, 46, 86, { width: 245 });
+  if (contactBits.length) {
+    doc.font("Helvetica").fontSize(7.4).fillColor("#7a8398").text(contactBits.join("  •  "), 300, 87, { width: 220, align: "right" });
+  }
 
   doc.roundedRect(345, 26, 204, 30, 6).fill("#f0f4fb");
   doc.font("Helvetica-Bold").fontSize(13).fillColor("#16213a").text(title, 345, 35, { width: 204, align: "center" });
@@ -208,11 +215,14 @@ async function generateBookingPdf(booking) {
       y += 20;
     });
 
-    // Page 1 stops at the trip/amount summary — terms, booking policies
-    // and the signature always start fresh on page 2 instead of spilling
-    // over and splitting awkwardly across pages.
+    if (signatory?.active !== false && (signatureBuffer || signatory?.fullName || signatory?.designation)) {
+      drawSignatureBlock(doc, { x: 390, width: 150, y: 642, imageBuffer: signatureBuffer, name: signatory.fullName, designation: signatory.designation });
+    }
+
+    // Page 1 includes the signatory, while the policy section and detailed notes
+    // remain on page 2 for a cleaner, more formal document flow.
     doc.addPage();
-    drawHeader(doc, "BOOKING VOUCHER", "Terms, policies & signature");
+    drawHeader(doc, "BOOKING VOUCHER", "Terms, policies & signature", booking.businessSnapshot || {});
     y = 116;
 
     if (booking.terms) {
@@ -221,7 +231,6 @@ async function generateBookingPdf(booking) {
       y += doc.heightOfString(booking.terms, { width: 503, lineGap: 2 }) + 15;
     }
 
-    // --- Booking policies: two side-by-side cards, "not permitted" vs "please note" ---
     const prohibited = booking.policies?.prohibited?.length ? booking.policies.prohibited : DEFAULT_PROHIBITED;
     const notes = booking.policies?.notes?.length ? booking.policies.notes : DEFAULT_NOTES;
     y = sectionTitle(doc, "Booking policies", y + 6);
@@ -318,8 +327,10 @@ async function generateInvoicePdf(invoice) {
     doc.font("Helvetica-Bold").fillColor("#16213a").text("Balance due", 330, sy);
     doc.text(money(invoice.balance), 430, sy, { width: 108, align: "right" });
 
-    // Page 1 stops at the amount summary — terms and the signature always
-    // start fresh on page 2 instead of spilling over unpredictably.
+    if (signatureBuffer || biz.signatoryName || biz.signatoryDesignation) {
+      drawSignatureBlock(doc, { x: 390, width: 150, y: 642, imageBuffer: signatureBuffer, name: biz.signatoryName, designation: biz.signatoryDesignation });
+    }
+
     doc.addPage();
     drawHeader(doc, "PROFORMA INVOICE", "Terms & signature", biz);
     let y2 = 116;

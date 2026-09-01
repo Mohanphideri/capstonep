@@ -21,11 +21,21 @@ export function FleetGallery() {
 }
 
 export function AboutPage() {
+  const gallery = ["/about1.jpg", "/about2.jpg"];
+  const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImage((current) => (current + 1) % gallery.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [gallery.length]);
+
   return <div className="page"><SiteBanner /><Navbar /><main className="public-page about-page">
     <section className="public-hero container about-hero">
       <p className="eyebrow">ABOUT KUWARJI TRAVELS</p>
-      <h1 className="public-title">Travel planning that feels simple, clear and dependable.</h1>
-      <p className="public-intro">Kuwarji Travels helps families, groups, companies and travellers arrange buses, cars and tempo travellers for local journeys, outstation travel and organised tours — with practical support from enquiry to the end of the trip.</p>
+      <h1 className="public-title">Travel made simple, dependable and comfortable.</h1>
+      <p className="about-since">Since 1990</p>
     </section>
 
     <section className="container about-story-grid about-story-grid--premium">
@@ -41,14 +51,17 @@ export function AboutPage() {
           <div><strong>24×7</strong><span>Support access</span></div>
         </div>
       </div>
-      <div className="about-story-media about-photo-collage">
-        <div className="about-photo-main">
-          <img src="/about1.jpg" alt="Kuwarji Travels coach ready for a journey" loading="eager" />
-        </div>
-        <div className="about-photo-secondary">
-          <img src="/about2.jpg" alt="Kuwarji Travels buses on the road" loading="lazy" />
-        </div>
-        <div className="about-photo-badge"><strong>Kuwarji Travels</strong><span>On the road with you</span></div>
+      <div className="about-story-media about-photo-collage" aria-label="Kuwarji Travels gallery">
+        {gallery.map((src, index) => (
+          <img
+            key={src}
+            src={src}
+            alt={index === 0 ? "Kuwarji Travels coach ready for a journey" : "Kuwarji Travels buses on the road"}
+            loading={index === 0 ? "eager" : "lazy"}
+            className={`about-photo ${index === activeImage ? "about-photo-active" : "about-photo-hidden"}`}
+          />
+        ))}
+        <div className="about-photo-badge"><strong>Kuwarji Travels</strong><span>Since 1990</span></div>
       </div>
     </section>
 

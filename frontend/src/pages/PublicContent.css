@@ -13,6 +13,7 @@
 .about-story-stats span{margin-top:4px;font-size:11.5px;color:#8592a8;text-transform:uppercase;letter-spacing:.06em}
 .about-story-media{position:relative}
 .about-story-media img{width:100%;aspect-ratio:15/8;object-fit:cover;border-radius:20px;box-shadow:0 22px 50px rgba(20,35,65,.16);display:block}
+.about-since{margin:0 0 1rem;color:#244a9b;font-size:1rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 @media(max-width:900px){.about-story-grid{grid-template-columns:1fr;gap:26px}.about-story-media{order:-1}.about-story-copy h2{font-size:24px}.about-story-stats{gap:20px;flex-wrap:wrap}}
 
 /* Refined public/legal pages */
@@ -88,20 +89,16 @@
 .legal-reference-section a{color:#2458ad}
 .legal-help{box-shadow:0 10px 28px rgba(22,37,63,.045)}
 
-/* Premium About page — both photos visible together, no scrolling or waiting needed */
+/* Premium About page — smooth alternating hero images */
 .about-page .about-hero{padding-bottom:3.5rem}
 .about-page .about-story-grid--premium{margin-top:0;gap:56px}
 .about-page .about-story-copy{padding:1rem 0}
 .about-page .about-story-copy h2{max-width:620px;font-size:clamp(2rem,3.4vw,2.8rem);line-height:1.12}
 .about-page .about-story-copy p{max-width:650px;font-size:15px;line-height:1.8}
-.about-photo-collage{position:relative;min-height:480px;padding:0 28px 40px 0}
-.about-photo-main{position:relative;width:100%;height:440px;overflow:hidden;border-radius:26px;background:#dfe7f2;box-shadow:0 24px 65px rgba(20,35,65,.18);isolation:isolate}
-.about-photo-main::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,28,58,0) 55%,rgba(9,28,58,.45) 100%);z-index:1;pointer-events:none}
-.about-photo-main img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05) contrast(1.03);transition:transform .5s ease}
-.about-photo-collage:hover .about-photo-main img{transform:scale(1.03)}
-.about-photo-secondary{position:absolute;right:0;bottom:0;width:52%;height:220px;border-radius:20px;overflow:hidden;border:6px solid #fff;box-shadow:0 18px 40px rgba(20,35,65,.22);z-index:2}
-.about-photo-secondary img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
-.about-photo-collage:hover .about-photo-secondary img{transform:scale(1.04)}
+.about-photo-collage{position:relative;min-height:480px;border-radius:26px;overflow:hidden;background:#dfe7f2;box-shadow:0 24px 65px rgba(20,35,65,.18)}
+.about-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05) contrast(1.03);opacity:0;transform:scale(1.08) translateX(18px);transition:opacity .8s ease, transform .9s ease}
+.about-photo-active{opacity:1;transform:scale(1) translateX(0);z-index:1}
+.about-photo-hidden{opacity:0;transform:scale(1.08) translateX(-18px);z-index:0}
 .about-photo-badge{position:absolute;left:24px;top:24px;z-index:2;display:flex;flex-direction:column;gap:2px;padding:.65rem .9rem;border-radius:14px;background:rgba(18,34,61,.78);backdrop-filter:blur(8px);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.3)}
 .about-photo-badge strong{font-size:.92rem;letter-spacing:.02em}
 .about-photo-badge span{font-size:.68rem;color:#dbe4f5;letter-spacing:.04em}
@@ -109,6 +106,6 @@
 .about-section-heading{margin-bottom:1.35rem}
 .about-section-heading h2{margin:.35rem 0 0;color:#13213f;font-size:clamp(1.8rem,3vw,2.4rem);letter-spacing:-.025em}
 .about-card-number{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:10px;background:#eef4ff;color:#2458ad;font:800 .72rem/1 var(--font-mono);margin-bottom:.65rem}
-@media(max-width:900px){.about-photo-collage{min-height:400px;padding:0 20px 34px 0}.about-photo-main{height:360px}.about-photo-secondary{height:180px}.about-page .about-story-grid--premium{gap:30px}.about-story-media{order:-1}}
-@media(max-width:600px){.about-photo-collage{min-height:320px;padding:0 14px 26px 0}.about-photo-main{height:280px;border-radius:20px}.about-photo-secondary{height:130px;border-radius:16px;border-width:4px}.about-photo-badge{left:14px;top:14px;padding:.5rem .7rem}.about-photo-badge strong{font-size:.8rem}.about-photo-badge span{font-size:.62rem}}
-@media(prefers-reduced-motion:reduce){.about-photo-main img,.about-photo-secondary img{transition:none!important}}
+@media(max-width:900px){.about-photo-collage{min-height:400px}.about-page .about-story-grid--premium{gap:30px}.about-story-media{order:-1}}
+@media(max-width:600px){.about-photo-collage{min-height:320px;border-radius:20px}.about-photo-badge{left:14px;top:14px;padding:.5rem .7rem}.about-photo-badge strong{font-size:.8rem}.about-photo-badge span{font-size:.62rem}}
+@media(prefers-reduced-motion:reduce){.about-photo{transition:none!important}}

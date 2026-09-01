@@ -20,37 +20,25 @@ const HERO_TAGLINE = "Your journey, our wheels.";
 
 function HeroHeadline() {
   const [text, setText] = useState("");
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let timer;
-    const typingSpeed = deleting ? 55 : 95;
-    const pauseAfterTyping = 1800;
-    const pauseAfterDeleting = 500;
+    let index = 0;
 
-    if (!deleting && text === HERO_TAGLINE) {
-      timer = setTimeout(() => setDeleting(true), pauseAfterTyping);
-    } else if (deleting && text === "") {
-      timer = setTimeout(() => setDeleting(false), pauseAfterDeleting);
-    } else {
-      timer = setTimeout(() => {
-        setText(
-          deleting
-            ? HERO_TAGLINE.slice(0, Math.max(0, text.length - 1))
-            : HERO_TAGLINE.slice(0, text.length + 1)
-        );
-      }, typingSpeed);
-    }
+    const tick = () => {
+      index += 1;
+      setText(HERO_TAGLINE.slice(0, index));
 
+      if (index < HERO_TAGLINE.length) {
+        timer = setTimeout(tick, 75);
+      }
+    };
+
+    timer = setTimeout(tick, 120);
     return () => clearTimeout(timer);
-  }, [text, deleting]);
+  }, []);
 
-  return (
-    <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE}>
-      {text}
-      <span className="home-hero-typewriter-cursor" aria-hidden="true" />
-    </h1>
-  );
+  return <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE}>{text}</h1>;
 }
 
 export default function Home() {
@@ -117,7 +105,6 @@ export default function Home() {
         </div>
         <div className="container home-hero-modern-inner">
           <div className="home-hero-modern-copy">
-            <span className="home-hero-modern-kicker"><Icon name="star" size={14}/> SAFE JOURNEY. HAPPY MEMORIES.</span>
             <HeroHeadline />
             <div className="home-hero-modern-actions">
               <Link to="/trip-planner" className="home-modern-btn home-modern-btn-primary">
