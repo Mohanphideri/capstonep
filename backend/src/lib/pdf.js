@@ -176,18 +176,24 @@ async function generateBookingPdf(booking) {
     if (customer.email) doc.text(`Email: ${customer.email}`, 46, y + 32);
 
     y = sectionTitle(doc, "Journey", y + 55);
-    const journeyRows = [
-      ["Pickup", j.pickup || "-"],
-      ["Destination", j.destination || "-"],
-      ["Journey date", `${formatDate(j.journeyStart)}${j.pickupTime ? ` \u00b7 ${j.pickupTime}` : ""}`],
-      ["Return date", j.journeyEnd ? formatDate(j.journeyEnd) : "One way"],
-      ["Passengers", String(j.passengers ?? "-")],
-    ];
-    journeyRows.forEach(([label, value]) => {
-      doc.font("Helvetica-Bold").fontSize(9).fillColor("#16213a").text(label, 46, y, { width: 105 });
-      doc.font("Helvetica").fillColor("#4c5876").text(value, 155, y, { width: 394 });
-      y += 19;
-    });
+    doc.roundedRect(46, y, 503, 96, 8).fill("#f7f8fb");
+
+    doc.font("Helvetica-Bold").fontSize(8.6).fillColor("#7a8398").text("Pickup", 58, y + 12);
+    doc.font("Helvetica-Bold").fontSize(13).fillColor("#16213a").text(j.pickup || "-", 58, y + 27, { width: 210 });
+
+    doc.font("Helvetica-Bold").fontSize(8.6).fillColor("#7a8398").text("Destination", 300, y + 12);
+    doc.font("Helvetica-Bold").fontSize(13).fillColor("#16213a").text(j.destination || "-", 300, y + 27, { width: 220 });
+
+    doc.font("Helvetica-Bold").fontSize(8.6).fillColor("#7a8398").text("From", 58, y + 58);
+    doc.font("Helvetica").fontSize(11).fillColor("#4c5876").text(`${formatDate(j.journeyStart)}${j.pickupTime ? ` • ${j.pickupTime}` : ""}`, 96, y + 58, { width: 180 });
+
+    doc.font("Helvetica-Bold").fontSize(8.6).fillColor("#7a8398").text("To", 300, y + 58);
+    doc.font("Helvetica").fontSize(11).fillColor("#4c5876").text(j.journeyEnd ? formatDate(j.journeyEnd) : "One way", 326, y + 58, { width: 180 });
+
+    doc.font("Helvetica-Bold").fontSize(8.6).fillColor("#7a8398").text("Passengers", 456, y + 58);
+    doc.font("Helvetica").fontSize(11).fillColor("#4c5876").text(String(j.passengers ?? "-"), 520, y + 58, { width: 24, align: "right" });
+
+    y += 110;
 
     y = sectionTitle(doc, "Vehicle(s)", y + 15);
     (booking.vehicles || []).forEach((bv) => {
@@ -242,12 +248,6 @@ async function generateBookingPdf(booking) {
       x: 46 + colWidth + 16, width: colWidth, y, heading: "Please note", items: notes, tint: "#f0f4fb", dot: "#244a9b",
     });
     y = Math.max(bottomLeft, bottomRight) + 24;
-
-    if (signatory?.active !== false && (signatureBuffer || signatory?.fullName || signatory?.designation)) {
-      y = ensureSpace(doc, y, 90, renderHeader);
-      y = sectionTitle(doc, "Authorised signatory", y);
-      drawSignatureBlock(doc, { x: 369, width: 180, y: y + 6, imageBuffer: signatureBuffer, name: signatory.fullName, designation: signatory.designation });
-    }
 
     finalizeFooters(doc, "Thank you for choosing Kuwarji Travels.");
     doc.end();

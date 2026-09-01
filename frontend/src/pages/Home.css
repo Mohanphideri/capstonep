@@ -149,13 +149,13 @@
 .home-hero-modern-wash:after{content:"";position:absolute;left:0;top:0;bottom:0;width:46%;background:radial-gradient(circle at 15% 48%,rgba(255,255,255,.95),rgba(255,255,255,.72) 40%,transparent 75%)}
 .home-hero-modern-glow{position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 61%);transform:translateX(-30%);animation:modernHeroShine 8s ease-in-out infinite}
 .home-hero-modern-inner{min-height:590px;display:flex;align-items:center;position:relative;z-index:2}
-.home-hero-modern-copy{width:min(570px,55%);padding:4.5rem 0 5rem;margin-left:1rem}
+.home-hero-modern-copy{width:min(560px,55%);padding:4.5rem 0 5rem;margin-left:0}
 .home-hero-modern-kicker{display:inline-flex;align-items:center;gap:.45rem;padding:.48rem .78rem;border:1px solid #e8edf5;border-radius:999px;background:rgba(255,255,255,.86);box-shadow:0 8px 24px rgba(21,43,75,.07);font-size:.68rem;font-weight:900;letter-spacing:.045em;color:#173b78;animation:modernHeroCopyIn .7s .08s both}
 .home-hero-modern-kicker span{color:#e0301e;font-size:.8rem}
-.home-hero-modern h1{margin:1.35rem 0 0;color:#122b5b;font-size:clamp(2.7rem,4.7vw,4.7rem);line-height:1.03;letter-spacing:-.055em;font-weight:850;animation:modernHeroCopyIn .75s .16s both}
+.home-hero-modern h1{margin:1.35rem 0 0;color:#122b5b;font-size:clamp(2.2rem,3.3vw,3.7rem);line-height:1.03;letter-spacing:-.05em;font-weight:850;animation:modernHeroCopyIn .75s .16s both}
 .home-hero-modern h1 em{font-style:normal;color:#d52a1e}
 .home-hero-modern-copy p{margin:1.25rem 0 0;color:#4d5e78;font-size:1.02rem;line-height:1.7;animation:modernHeroCopyIn .75s .24s both}
-.home-hero-modern-actions{display:flex;gap:.85rem;flex-wrap:wrap;margin-top:1.75rem;animation:modernHeroCopyIn .75s .32s both}
+.home-hero-modern-actions{display:flex;justify-content:flex-start;gap:.85rem;flex-wrap:wrap;margin-top:1.5rem;animation:modernHeroCopyIn .75s .32s both}
 .home-modern-btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;min-height:49px;padding:.8rem 1.25rem;border-radius:10px;text-decoration:none;font-size:.83rem;font-weight:850;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
 .home-modern-btn-primary{background:#d7281e;color:#fff;box-shadow:0 12px 28px rgba(215,40,30,.24)}
 .home-modern-btn-primary:hover{background:#bd2118;color:#fff;transform:translateY(-2px);box-shadow:0 16px 32px rgba(215,40,30,.28)}
@@ -441,9 +441,9 @@
   margin: 1.35rem 0 0;
   min-height: 1.15em;
   color: #fff !important;
-  font-size: clamp(2.7rem, 4.7vw, 4.7rem);
+  font-size: clamp(2.15rem, 3.25vw, 3.55rem);
   line-height: 1.03;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.05em;
   font-weight: 850;
   text-shadow: 0 3px 20px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.45);
   animation: heroTypewriterIn .7s .12s both;
@@ -457,6 +457,12 @@
 
 .home-hero-modern h1 em {
   color: #fff !important;
+}
+
+.home-faq {
+  padding-top: 3.25rem;
+  padding-bottom: 4rem;
+  margin-bottom: 1rem;
 }
 
 .home-hero-modern-actions {
