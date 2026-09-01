@@ -127,6 +127,15 @@ router.post("/", async (req, res) => {
     const amountReceived = Math.min(d.amountReceived ?? booking.pricing.amountReceived ?? 0, total);
     const balance = Math.max(0, total - amountReceived);
 
+    // Keep the booking's customer-facing balance synchronized with the invoice.
+    await Booking.updateOne({ _id: booking._id }, { $set: {
+      "pricing.totalAmount": total,
+      "pricing.amountReceived": amountReceived,
+      "pricing.balanceAmount": balance,
+      "pricing.discount": discount,
+      "pricing.taxAmount": tax,
+    }});
+
     const settings = await getSiteSettings();
     const invoiceNumber = await generateInvoiceNumber();
 
@@ -240,6 +249,16 @@ router.patch("/:id", async (req, res) => {
     if (d.status) invoice.status = d.status;
 
     await invoice.save();
+
+    // Invoice is the source of truth for the amount received/balance shown
+    // throughout the customer and admin booking views.
+    await Booking.updateOne({ _id: invoice.bookingId }, { $set: {
+      "pricing.totalAmount": invoice.total,
+      "pricing.amountReceived": invoice.amountReceived,
+      "pricing.balanceAmount": invoice.balance,
+      "pricing.discount": invoice.discount,
+      "pricing.taxAmount": invoice.tax,
+    }});
 
     await recordAuditLog({
       req,

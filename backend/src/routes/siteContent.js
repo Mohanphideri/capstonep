@@ -14,12 +14,12 @@ router.get("/", async (req, res) => {
       address: s.address,
       phone: s.phone,
       email: s.email,
+      logoUrl: s.logoUrl || null,
       whatsappNumber: s.whatsappNumber,
       mapEmbedUrl: s.mapEmbedUrl || "",
       whyUs: {
         title: s.whyUs?.title || "Why travellers choose Kuwarji Travels",
         intro: s.whyUs?.intro || "Reliable vehicles, clear communication and support from planning to return.",
-        imageUrl: s.whyUs?.imageUrl || null,
         items: Array.isArray(s.whyUs?.items) ? s.whyUs.items : [],
       },
       fleetGallery: Array.isArray(s.fleetGallery) ? s.fleetGallery.map((x) => ({ id: x.id, imageUrl: x.imageUrl, categoryId: x.categoryId?.toString?.() || x.categoryId || null, categoryName: x.categoryName || "Other", altText: x.altText || "Kuwarji Travels fleet" })) : [],
@@ -29,7 +29,6 @@ router.get("/", async (req, res) => {
       cancellationPolicyText: s.cancellationPolicyText || "",
       refundPolicyText: s.refundPolicyText || "",
       bookingPolicyText: s.bookingPolicyText || "",
-      socialLinks: s.socialLinks || {},
     }});
   } catch (err) {
     console.error("site content get error", err);

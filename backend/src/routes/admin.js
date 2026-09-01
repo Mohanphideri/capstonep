@@ -6,6 +6,7 @@ const { Enquiry } = require("../models/Enquiry");
 const { Booking } = require("../models/Booking");
 const { Vehicle } = require("../models/Vehicle");
 const { Review } = require("../models/Review");
+const { Complaint } = require("../models/Complaint");
 const { requireAdmin } = require("../middleware/requireAuth");
 
 const router = express.Router();
@@ -36,12 +37,13 @@ router.get("/stats", async (req, res) => {
       approvedReviews,
       pendingReviews,
       draftBookings,
+      openComplaints,
     ] = await Promise.all([
       User.countDocuments({ role: "customer" }),
       Enquiry.countDocuments({}),
       Enquiry.countDocuments({ status: "NEW" }),
-      Enquiry.countDocuments({ status: { $in: ["IN_REVIEW", "CONTACTED", "QUOTED"] } }),
-      Enquiry.countDocuments({ status: "CONVERTED" }),
+      Enquiry.countDocuments({ status: { $in: ["BOOKED", "BOOKING"] } }),
+      Enquiry.countDocuments({ status: "BOOKING" }),
       Booking.countDocuments({}),
       Booking.countDocuments({ status: "CONFIRMED" }),
       Booking.countDocuments({ status: "COMPLETED" }),
@@ -51,6 +53,7 @@ router.get("/stats", async (req, res) => {
       Review.countDocuments({ status: "APPROVED" }),
       Review.countDocuments({ status: "PENDING" }),
       Booking.countDocuments({ status: "DRAFT" }),
+      Complaint.countDocuments({ status: { $in: ["OPEN", "IN_REVIEW", "IN_PROGRESS"] } }),
     ]);
     return res.json({
       success: true,
@@ -69,6 +72,7 @@ router.get("/stats", async (req, res) => {
         approvedReviews,
         pendingReviews,
         draftBookings,
+        openComplaints,
         notificationCount: newEnquiries + pendingReviews + draftBookings + maintenanceVehicles,
       },
     });

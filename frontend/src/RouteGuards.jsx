@@ -1,7 +1,16 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
-const ADMIN_ROLES = ["staff", "admin", "super_admin"];
+// Mirrors the backend's own admin authorization exactly (see
+// backend/src/middleware/requireAuth.js and models/User.js): only
+// super_admin is a real, authorized admin role. "staff" and "admin"
+// remain valid enum values purely so old seeded documents don't fail
+// schema validation — nothing in the app creates or authorizes them
+// going forward, and every admin API call from such an account would
+// be rejected with 403 regardless of what the frontend shows. Letting
+// them into the /admin shell here would just produce a broken-looking
+// dashboard full of failed requests instead of a clean redirect.
+const ADMIN_ROLES = ["super_admin"];
 
 // Mirrors the original Next.js middleware: /dashboard requires a session,
 // /login redirects away if you already have one.
@@ -26,7 +35,7 @@ export function PublicOnlyRoute({ children }) {
   if (loading) return null;
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/dashboard/trip-planner" replace />;
   }
 
   return children;

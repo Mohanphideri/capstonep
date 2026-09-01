@@ -91,7 +91,7 @@ const EnquirySchema = new mongoose.Schema(
     // first submission through to a completed deal (or closure).
     status: {
       type: String,
-      enum: ["NEW", "IN_REVIEW", "CONTACTED", "QUOTED", "SELECTED_FOR_BOOKING", "CONVERTED", "CLOSED", "CANCELLED"],
+      enum: ["NEW", "BOOKED", "BOOKING", "CLOSED", "CANCELLED"],
       default: "NEW",
       index: true,
     },

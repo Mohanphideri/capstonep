@@ -96,6 +96,9 @@ const BookingSchema = new mongoose.Schema(
 
     cancelledAt: { type: Date, default: null },
     cancellationReason: { type: String, default: null },
+    refundAmount: { type: Number, default: 0, min: 0 },
+    refundStatus: { type: String, enum: ["NOT_APPLICABLE", "REFUND_PENDING", "REFUND_PROCESSING", "REFUNDED"], default: "NOT_APPLICABLE" },
+    refundExpectedDays: { type: String, default: "5–7 business days" },
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
 

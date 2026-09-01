@@ -227,6 +227,81 @@ router.post("/admin-login", adminLoginRateLimit, async (req, res) => {
   }
 });
 
+
+// --- SuperAdmin profile and password management ---
+const adminProfileSchema = z.object({
+  name: z.string().trim().min(2, "Enter your full name.").max(120),
+  phone: z.string().transform((v) => v.replace(/\D/g, "")).refine((v) => v.length === 10, "Enter a valid 10-digit mobile number."),
+});
+
+router.get("/admin/profile", requireAuth, async (req, res) => {
+  if (!ADMIN_ROLES.includes(req.session.role)) return res.status(403).json({ success:false, error:"Super admin access required." });
+  try {
+    await connectToDatabase();
+    const user = await User.findById(req.session.userId).lean();
+    if (!user) return res.status(404).json({ success:false, error:"Admin account not found." });
+    return res.json({ success:true, profile:{ name:user.name || "", phone:user.phone || "", email:user.email || "" } });
+  } catch (err) {
+    console.error("admin/profile get error", err);
+    return res.status(500).json({ success:false, error:"Failed to load admin profile." });
+  }
+});
+
+router.patch("/admin/profile", requireAuth, async (req, res) => {
+  if (!ADMIN_ROLES.includes(req.session.role)) return res.status(403).json({ success:false, error:"Super admin access required." });
+  const parsed = adminProfileSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success:false, error:parsed.error.issues[0]?.message || "Invalid profile." });
+  try {
+    await connectToDatabase();
+    const duplicate = await User.findOne({ phone: parsed.data.phone, _id: { $ne: req.session.userId } }).lean();
+    if (duplicate) return res.status(409).json({ success:false, error:"That mobile number is already registered." });
+    const user = await User.findByIdAndUpdate(req.session.userId, { name: parsed.data.name, phone: parsed.data.phone }, { new:true }).lean();
+    if (!user) return res.status(404).json({ success:false, error:"Admin account not found." });
+    return res.json({ success:true, profile:{ name:user.name || "", phone:user.phone || "", email:user.email || "" } });
+  } catch (err) {
+    console.error("admin/profile update error", err);
+    return res.status(500).json({ success:false, error:"Failed to update admin profile." });
+  }
+});
+
+const adminPasswordSchema = z.object({ oldPassword:z.string().min(1), newPassword:z.string().min(8, "New password must be at least 8 characters.").max(128) });
+router.post("/admin/change-password", requireAuth, async (req, res) => {
+  if (!ADMIN_ROLES.includes(req.session.role)) return res.status(403).json({ success:false, error:"Super admin access required." });
+  const parsed = adminPasswordSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success:false, error:parsed.error.issues[0]?.message || "Invalid password." });
+  try {
+    await connectToDatabase();
+    const user = await User.findById(req.session.userId).select("+passwordHash");
+    if (!user || !user.passwordHash || !(await bcrypt.compare(parsed.data.oldPassword, user.passwordHash))) return res.status(401).json({ success:false, error:"Old password is incorrect." });
+    user.passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
+    await user.save();
+    return res.json({ success:true, message:"Password changed successfully." });
+  } catch (err) {
+    console.error("admin/change-password error", err);
+    return res.status(500).json({ success:false, error:"Failed to change password." });
+  }
+});
+
+const adminResetSchema = z.object({ accessToken:z.string().min(10), newPassword:z.string().min(8, "New password must be at least 8 characters.").max(128) });
+router.post("/admin/reset-password", verifyRateLimit, async (req, res) => {
+  const parsed = adminResetSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success:false, error:parsed.error.issues[0]?.message || "Invalid reset request." });
+  try {
+    const { verifiedIdentifier } = await verifyMsg91AccessToken(parsed.data.accessToken);
+    const phone = normalizePhone(verifiedIdentifier);
+    await connectToDatabase();
+    const user = await User.findOne({ phone, role: { $in: ADMIN_ROLES } }).select("+passwordHash");
+    if (!user) return res.status(400).json({ success:false, error:"The verified mobile number is not registered for an admin account." });
+    user.passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
+    await user.save();
+    return res.json({ success:true, message:"Password reset successfully. You can now sign in." });
+  } catch (err) {
+    if (err instanceof Msg91VerificationError) return res.status(401).json({ success:false, error:err.message });
+    console.error("admin/reset-password error", err);
+    return res.status(500).json({ success:false, error:"Unable to reset the password. Please try again." });
+  }
+});
+
 router.get("/me", async (req, res) => {
   const token = req.cookies?.[SESSION_COOKIE];
   if (!token) {

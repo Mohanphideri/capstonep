@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const STATUS_VALUES = ["NEW", "IN_REVIEW", "CONTACTED", "QUOTED", "SELECTED_FOR_BOOKING", "CONVERTED", "CLOSED", "CANCELLED"];
+const STATUS_VALUES = ["NEW", "BOOKED", "BOOKING", "CLOSED", "CANCELLED"];
 
 /**
  * Builds a Mongoose filter object for GET /api/admin/enquiries from

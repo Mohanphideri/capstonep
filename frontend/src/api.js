@@ -53,11 +53,13 @@ export async function apiFetch(path, options = {}) {
       data = null;
     }
 
-    console.log(
-      `[API] ${options.method || "GET"} ${path}`,
-      res.status,
-      data
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        `[API] ${options.method || "GET"} ${path}`,
+        res.status,
+        data
+      );
+    }
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("kt:api-complete", { detail: { requestId } }));

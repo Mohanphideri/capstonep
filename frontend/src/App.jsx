@@ -1,7 +1,9 @@
-import { Navigate, Routes, Route, useParams } from "react-router-dom";
+import { Navigate, Routes, Route, useParams, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import TripPlanner from "./pages/TripPlanner.jsx";
 import Vehicles from "./pages/Vehicles.jsx";
 import VehicleDetail from "./pages/VehicleDetail.jsx";
 import MyBookings from "./pages/MyBookings.jsx";
@@ -10,6 +12,7 @@ import MyEnquiries from "./pages/MyEnquiries.jsx";
 import MyInvoices from "./pages/MyInvoices.jsx";
 import MyReviews from "./pages/MyReviews.jsx";
 import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminVehicles from "./pages/admin/AdminVehicles.jsx";
@@ -23,18 +26,17 @@ import AdminBookingCreate from "./pages/admin/AdminBookingCreate.jsx";
 import AdminBookingDetail from "./pages/admin/AdminBookingDetail.jsx";
 import AdminInvoices from "./pages/admin/AdminInvoices.jsx";
 import AdminInvoiceDetail from "./pages/admin/AdminInvoiceDetail.jsx";
-import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
-import AdminCustomerDetail from "./pages/admin/AdminCustomerDetail.jsx";
 import AdminReports from "./pages/admin/AdminReports.jsx";
 import AdminBalanceSheet from "./pages/admin/AdminBalanceSheet.jsx";
 import AdminSettings, { SETTINGS_SECTIONS } from "./pages/admin/AdminSettings.jsx";
-import AdminAuditLogs from "./pages/admin/AdminAuditLogs.jsx";
+import AdminProfile from "./pages/admin/AdminProfile.jsx";
 import AdminReviews from "./pages/admin/AdminReviews.jsx";
-import TripMaker from "./pages/TripMaker.jsx";
+import AdminIssues from "./pages/admin/AdminIssues.jsx";
 import TourPackages from "./pages/TourPackages.jsx";
 import TourPackageDetail from "./pages/TourPackageDetail.jsx";
 import AdminTourPackages from "./pages/admin/AdminTourPackages.jsx";
 import { WhyUs, FleetGallery, LegalPage, LocationPage, AboutPage, FAQPage } from "./pages/PublicContent.jsx";
+import { PRIVACY_POLICY_TEXT, COOKIE_POLICY_TEXT, TERMS_TEXT, CANCELLATION_POLICY_TEXT, REFUND_POLICY_TEXT } from "./data/legalContent.js";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
@@ -49,13 +51,25 @@ function AdminSettingsRouter() {
   return <AdminSettings section={section} />;
 }
 
+
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+  }, [pathname, search]);
+  return null;
+}
+
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/vehicles" element={<Vehicles />} />
       <Route path="/vehicles/:id" element={<VehicleDetail />} />
-      <Route path="/trip-maker" element={<TripMaker />} />
       <Route path="/tour-packages" element={<TourPackages />} />
       <Route path="/tour-packages/:id" element={<TourPackageDetail />} />
       <Route path="/about" element={<AboutPage />} />
@@ -63,17 +77,28 @@ export default function App() {
       <Route path="/why-us" element={<WhyUs />} />
       <Route path="/fleet-gallery" element={<FleetGallery />} />
       <Route path="/location" element={<LocationPage />} />
-      <Route path="/privacy-policy" element={<LegalPage type="privacyPolicyText" title="Privacy Policy" fallback="Our privacy policy is managed by the Kuwarji Travels team." />} />
-      <Route path="/cookie-policy" element={<LegalPage type="cookiePolicyText" title="Cookie Policy" fallback="Our cookie policy is managed by the Kuwarji Travels team." />} />
-      <Route path="/terms" element={<LegalPage type="termsText" title="Terms & Conditions" fallback="Our terms and conditions are managed by the Kuwarji Travels team." />} />
-      <Route path="/cancellation-policy" element={<LegalPage type="cancellationPolicyText" title="Cancellation Policy" fallback="Our cancellation policy is managed by the Kuwarji Travels team." />} />
-      <Route path="/refund-policy" element={<LegalPage type="refundPolicyText" title="Refund Policy" fallback="Our refund policy is managed by the Kuwarji Travels team." />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/privacy-policy" element={<LegalPage type="privacyPolicyText" title="Privacy Policy" fallback={PRIVACY_POLICY_TEXT} />} />
+      <Route path="/cookie-policy" element={<LegalPage type="cookiePolicyText" title="Cookie Policy" fallback={COOKIE_POLICY_TEXT} />} />
+      <Route path="/terms" element={<LegalPage type="termsText" title="Terms & Conditions" fallback={TERMS_TEXT} />} />
+      <Route path="/cancellation-policy" element={<LegalPage type="cancellationPolicyText" title="Cancellation Policy" fallback={CANCELLATION_POLICY_TEXT} />} />
+      <Route path="/refund-policy" element={<LegalPage type="refundPolicyText" title="Refund Policy" fallback={REFUND_POLICY_TEXT} />} />
+      <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      {/* Trip Planner is public: guests get 2 free messages every 5 hours;
+          authenticated customers can continue without the guest cap. */}
+      <Route path="/trip-planner" element={<TripPlanner />} />
+      <Route
+        path="/dashboard/trip-planner"
+        element={
+          <ProtectedRoute>
+            <TripPlanner />
           </ProtectedRoute>
         }
       />
@@ -90,14 +115,6 @@ export default function App() {
         element={
           <ProtectedRoute>
             <VehicleDetail embedded />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/trip-maker"
-        element={
-          <ProtectedRoute>
-            <TripMaker embedded />
           </ProtectedRoute>
         }
       />
@@ -141,6 +158,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route
         path="/dashboard/profile"
         element={
@@ -286,22 +304,6 @@ export default function App() {
         }
       />
       <Route
-        path="/admin/customers"
-        element={
-          <SuperAdminRoute>
-            <AdminCustomers />
-          </SuperAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/customers/:id"
-        element={
-          <SuperAdminRoute>
-            <AdminCustomerDetail />
-          </SuperAdminRoute>
-        }
-      />
-      <Route
         path="/admin/balance-sheet"
         element={
           <SuperAdminRoute>
@@ -317,6 +319,7 @@ export default function App() {
           </SuperAdminRoute>
         }
       />
+      <Route path="/admin/profile" element={<SuperAdminRoute><AdminProfile /></SuperAdminRoute>} />
       <Route path="/admin/settings" element={<Navigate to="/admin/settings/business" replace />} />
       <Route
         path="/admin/settings/:section"
@@ -335,14 +338,15 @@ export default function App() {
         }
       />
       <Route
-        path="/admin/audit-logs"
+        path="/admin/issues"
         element={
           <SuperAdminRoute>
-            <AdminAuditLogs />
+            <AdminIssues />
           </SuperAdminRoute>
         }
       />
       <Route path="*" element={<Home />} />
     </Routes>
+    </>
   );
 }

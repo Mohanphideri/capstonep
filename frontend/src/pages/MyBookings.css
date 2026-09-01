@@ -1,8 +1,3 @@
-.my-bookings-back {
-  color: var(--color-marigold);
-  text-decoration: none;
-}
-
 .my-bookings-tabs {
   display: flex;
   gap: 0.5rem;
@@ -40,6 +35,15 @@
   text-decoration: none;
   color: inherit;
   flex-wrap: wrap;
+}
+
+.my-booking-card > div:first-child {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.my-booking-card p {
+  overflow-wrap: break-word;
 }
 
 .my-booking-vehicle {
@@ -92,8 +96,44 @@
   color: #c9820a;
 }
 
+.my-booking-status.status-completed,
+.my-booking-status.status-booked {
+  border-color: rgba(26, 127, 75, 0.35);
+  background: rgba(26, 127, 75, 0.08);
+  color: #1a7f4b;
+}
+
+.my-booking-status.status-in_progress,
+.my-booking-status.status-booking {
+  border-color: rgba(36, 74, 155, 0.32);
+  background: rgba(36, 74, 155, 0.08);
+  color: var(--color-blue, #244a9b);
+}
+
+.my-booking-status.status-new {
+  border-color: rgba(15, 157, 143, 0.32);
+  background: rgba(15, 157, 143, 0.08);
+  color: var(--color-marigold-dark, #0b7d72);
+}
+
+.my-booking-status.status-draft,
+.my-booking-status.status-closed {
+  border-color: var(--color-paper-line);
+  background: transparent;
+  color: var(--color-ink-soft);
+}
+
 .my-booking-amount {
   font-family: var(--font-display);
   font-weight: 700;
   color: var(--color-ink);
 }
+
+.my-booking-main { min-width:0; flex:1 1 320px; }
+.my-booking-id-row { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.2rem; }
+.my-booking-id-row p { margin:0; }
+.my-booking-id-row strong { font-size:.78rem; letter-spacing:.02em; }
+.my-booking-dates span { font-weight:700; color:var(--color-ink); margin-right:.35rem; }
+@media(max-width:640px){ .my-booking-meta { width:100%; align-items:flex-start; } }
+
+.my-booking-refund{font-size:.76rem;font-weight:700;color:#a15c00}

@@ -40,7 +40,7 @@
   --color-danger-dark: #c5262d;
   --color-danger-light: #ef4444;
 
-  --glow-cyan: 0 6px 20px -6px rgba(15, 157, 143, 0.35);
+  --glow-cyan: 0 6px 20px -6px rgba(201, 121, 26, 0.32);
   --glow-violet: 0 6px 20px -6px rgba(37, 99, 235, 0.25);
   --gradient-accent: linear-gradient(120deg, var(--color-blue) 0%, var(--color-blue-light) 100%);
 
@@ -339,9 +339,11 @@ button, input, select, textarea { max-width: 100%; }
   --color-blue-darker: #0b254f;
   --color-blue-light: #315fa8;
   --color-blue-tint: #edf3ff;
-  --color-marigold: #2b9d82;
-  --color-marigold-dark: #21765f;
-  --color-marigold-light: #e9f7f2;
+  /* Marigold — a real Indian travel-brand accent (the flower used in
+     garlands and celebrations), not a generic SaaS teal/violet. */
+  --color-marigold: #c9791a;
+  --color-marigold-dark: #9c5c12;
+  --color-marigold-light: #fbf0df;
   --shadow-sm: 0 1px 3px rgba(24, 42, 72, .05);
   --shadow-md: 0 5px 16px rgba(24, 42, 72, .055);
   --shadow-lg: 0 14px 34px rgba(24, 42, 72, .08);
@@ -352,9 +354,6 @@ button, input, select, textarea { max-width: 100%; }
 
 body {
   background: #f6f8fc;
-  background-image:
-    radial-gradient(60rem 40rem at 92% -15%, rgba(49, 95, 168, .045), transparent 60%),
-    radial-gradient(50rem 35rem at -10% 10%, rgba(43, 157, 130, .035), transparent 55%);
 }
 
 .btn { border-radius: 9px; }

@@ -1,5 +1,6 @@
+import Icon from "../../components/Icon.jsx";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { apiFetch } from "../../api.js";
 import { AdminLayout } from "../../components/AdminLayout.jsx";
 
@@ -31,10 +32,9 @@ function fileToBase64(file) {
   });
 }
 
-export default function AdminVehicleForm() {
+function AdminVehicleForm() {
   const { id } = useParams();
   const isNew = !id;
-  const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
   const [amenities, setAmenities] = useState([]);
@@ -527,7 +527,7 @@ export default function AdminVehicleForm() {
                 stagePhotoFiles({ target: { files, value: "" } });
               }}
             >
-              <span className="admin-photo-drop-icon">＋</span>
+              <span className="admin-photo-drop-icon"><Icon name="plus" size={20}/></span>
               <strong>Select images</strong>
               <small>or drag files here · up to 5MB each</small>
             </label>
@@ -571,3 +571,5 @@ export default function AdminVehicleForm() {
     </AdminLayout>
   );
 }
+
+export default AdminVehicleForm;

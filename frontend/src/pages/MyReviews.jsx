@@ -19,9 +19,14 @@ export default function MyReviews() {
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState({});
   const [forms, setForms] = useState({});
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [openReview, setOpenReview] = useState(null);
+
+  useEffect(() => { apiFetch("/api/locations/states").then(r=>{if(r.ok&&r.data?.success)setStates(r.data.states||[])}); }, []);
 
   useEffect(() => {
     Promise.all([
@@ -48,13 +53,13 @@ export default function MyReviews() {
     setMessage("");
     const { ok, data } = await apiFetch("/api/reviews", {
       method: "POST",
-      body: JSON.stringify({ bookingId, rating: form.rating, text: form.text.trim() }),
+      body: JSON.stringify({ bookingId, rating: form.rating, text: form.text.trim(), name: form.name?.trim(), state: form.state, district: form.district }),
     });
     if (!ok || !data?.success) {
       setError(data?.error || "Unable to submit your review.");
       return;
     }
-    setReviews((prev) => ({ ...prev, [bookingId]: { rating: form.rating, text: form.text.trim(), status: "PENDING" } }));
+    setReviews((prev) => ({ ...prev, [bookingId]: { rating: form.rating, text: form.text.trim(), status: "PENDING", state: form.state, district: form.district } }));
     setMessage("Thanks. Your review was sent to the Kuwarji Travels team for approval.");
   }
 
@@ -67,7 +72,7 @@ export default function MyReviews() {
       <div className="review-list">
         {bookings.map((booking) => {
           const existing = reviews[booking.bookingId];
-          const form = forms[booking.bookingId] || { rating: 5, text: "" };
+          const form = forms[booking.bookingId] || { rating: 5, text: "", name: booking.customer?.name || "", state: "", district: "" };
           return (
             <article className="review-card" key={booking.bookingId}>
               <div className="review-card-head">
@@ -82,10 +87,21 @@ export default function MyReviews() {
                 <div className="review-submitted">
                   <Stars value={existing.rating} readOnly />
                   {existing.text && <p>“{existing.text}”</p>}
-                  <small>{existing.status === "APPROVED" ? "Published" : "Waiting for admin approval"}</small>
+                  <small>{existing.status === "APPROVED" ? "Published on Kuwarji Travels" : "Review submitted"}</small>
                 </div>
               ) : (
+                <div className="review-action">
+                  <p>Have you travelled with us? Share your experience for this booking.</p>
+                  <button type="button" className="btn btn-primary" onClick={() => setOpenReview(booking.bookingId)}>Review this booking</button>
+                </div>
+              )}
+              {openReview === booking.bookingId && !existing && (
                 <div className="review-form">
+                  <div className="review-form-row">
+                    <div><label>Name</label><input value={form.name||""} onChange={e=>updateForm(booking.bookingId,{name:e.target.value})} placeholder="Your name"/></div>
+                    <div><label>State</label><select value={form.state||""} onChange={e=>updateForm(booking.bookingId,{state:e.target.value,district:""})}><option value="">Select state</option>{states.map(st=><option key={st.name} value={st.name}>{st.name}</option>)}</select></div>
+                    <div><label>District</label><select value={form.district||""} onChange={e=>updateForm(booking.bookingId,{district:e.target.value})} disabled={!form.state}><option value="">Select district</option>{(states.find(st=>st.name===form.state)?.districts||[]).map(d=><option key={d} value={d}>{d}</option>)}</select></div>
+                  </div>
                   <label>Your rating</label>
                   <Stars value={form.rating} onChange={(rating) => updateForm(booking.bookingId, { rating })} />
                   <label htmlFor={`review-${booking.bookingId}`}>Write a review</label>

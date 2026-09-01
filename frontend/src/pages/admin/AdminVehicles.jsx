@@ -41,7 +41,7 @@ export default function AdminVehicles() {
 
     const { ok, data } = await apiFetch(`/api/admin/vehicles?${params.toString()}`);
     if (ok && data?.success) {
-      setVehicles(data.vehicles);
+      setVehicles(Array.from(new Map((data.vehicles || []).map((item) => [item.id, item])).values()));
       setTotal(data.total);
     } else {
       setError(data?.error || "Failed to load vehicles.");
@@ -180,6 +180,7 @@ export default function AdminVehicles() {
                     <td>{v.priority}</td>
                     <td>
                       <div className="admin-row-actions">
+                        <Link to={`/admin/vehicles/${v.id}`} className="admin-inline-btn">Edit</Link>
                         <button type="button" className="admin-inline-btn" onClick={() => toggleStatus(v)}>
                           {v.status === "AVAILABLE" ? "Deactivate" : "Activate"}
                         </button>

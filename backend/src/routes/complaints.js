@@ -22,10 +22,21 @@ const CATEGORIES = [
 ];
 
 function serializeComplaint(c) {
+  const booking = c.bookingId && typeof c.bookingId === "object" ? c.bookingId : null;
+  const user = c.userId && typeof c.userId === "object" ? c.userId : null;
   return {
     ticketId: c.ticketId,
-    bookingId: c.bookingId,
+    bookingId: booking?.bookingId || c.bookingId,
+    customer: {
+      name: user?.name || c.customerSnapshot?.name || booking?.customerSnapshot?.name || "Customer",
+      mobile: user?.phone || c.customerSnapshot?.phone || booking?.customerSnapshot?.phone || "—",
+      email: user?.email || c.customerSnapshot?.email || booking?.customerSnapshot?.email || "—",
+    },
+    journey: booking?.journey || null,
+    bookingStatus: booking?.status || null,
     category: c.category,
+    vehicleIndex: c.vehicleIndex ?? null,
+    vehicleName: c.vehicleName || "",
     subject: c.subject,
     description: c.description,
     attachments: c.attachments,
@@ -42,6 +53,8 @@ const createSchema = z.object({
   subject: z.string().trim().min(3).max(150),
   description: z.string().trim().min(10).max(2000),
   attachments: z.array(z.string().url()).max(5).optional().default([]),
+  vehicleIndex: z.number().int().min(0).optional().nullable(),
+  vehicleName: z.string().trim().max(150).optional().default(""),
 });
 
 const createRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
@@ -66,12 +79,21 @@ router.post("/", requireAuth, createRateLimit, async (req, res) => {
     if (!booking || booking.userId.toString() !== req.session.userId) {
       return res.status(404).json({ success: false, error: "Booking not found." });
     }
+    if (parsed.data.vehicleIndex != null) {
+      const vehicle = Array.isArray(booking.vehicles) ? booking.vehicles[parsed.data.vehicleIndex] : null;
+      if (!vehicle) return res.status(400).json({ success: false, error: "Selected vehicle was not found in this booking." });
+      if (parsed.data.vehicleName && vehicle.name && parsed.data.vehicleName !== vehicle.name) {
+        return res.status(400).json({ success: false, error: "Selected vehicle does not match this booking." });
+      }
+    }
 
     const ticketId = await generateTicketId();
     const complaint = await Complaint.create({
       ticketId,
       userId: req.session.userId,
       bookingId: booking._id,
+      vehicleIndex: parsed.data.vehicleIndex ?? null,
+      vehicleName: parsed.data.vehicleName || "",
       category: parsed.data.category,
       subject: parsed.data.subject,
       description: parsed.data.description,
@@ -108,7 +130,15 @@ router.post("/", requireAuth, createRateLimit, async (req, res) => {
 router.get("/", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
-    const complaints = await Complaint.find({ userId: req.session.userId })
+    const filter = { userId: req.session.userId };
+    if (req.query.bookingId) {
+      const booking = await Booking.findOne({ bookingId: req.query.bookingId }).select("_id").lean();
+      if (!booking) return res.json({ success: true, complaints: [] });
+      filter.bookingId = booking._id;
+    }
+    const complaints = await Complaint.find(filter)
+      .populate("bookingId", "bookingId customerSnapshot journey status vehicles")
+      .populate("userId", "name phone email")
       .sort({ createdAt: -1 })
       .lean();
     return res.json({ success: true, complaints: complaints.map(serializeComplaint) });
@@ -122,7 +152,10 @@ router.get("/", requireAuth, async (req, res) => {
 router.get("/:ticketId", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
-    const complaint = await Complaint.findOne({ ticketId: req.params.ticketId }).lean();
+    const complaint = await Complaint.findOne({ ticketId: req.params.ticketId })
+      .populate("bookingId", "bookingId customerSnapshot journey status vehicles")
+      .populate("userId", "name phone email")
+      .lean();
     if (!complaint || complaint.userId.toString() !== req.session.userId) {
       return res.status(404).json({ success: false, error: "Complaint not found." });
     }

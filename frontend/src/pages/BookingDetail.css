@@ -76,6 +76,14 @@
   max-width: 30rem;
 }
 
+.booking-detail-vehicle-row {
+  margin-bottom: 0.75rem;
+}
+
+.booking-detail-invoice-link {
+  margin-top: 0.5rem;
+}
+
 .complaint-form select,
 .complaint-form input,
 .complaint-form textarea {
@@ -87,3 +95,62 @@
   font-size: 0.85rem;
   font-family: inherit;
 }
+
+.price-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+}
+
+.price-row span:last-child {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.price-row-total {
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+  border-top: 1px dashed var(--color-paper-line);
+  font-weight: 700;
+}
+
+.price-row-total span {
+  color: var(--color-ink) !important;
+  font-size: 1rem;
+}
+
+
+
+.booking-detail-title-block { display:flex; flex-direction:column; align-items:flex-start; gap:.25rem; }
+.booking-detail-title-block .dashboard-title { margin:.05rem 0 .25rem; }
+.booking-status-alert { grid-column:1 / -1; display:flex; flex-direction:column; gap:.25rem; padding:1rem 1.2rem; border-radius:14px; border:1px solid var(--color-paper-line); margin-bottom:1.25rem; }
+.booking-status-alert-cancelled { background:rgba(178,46,56,.06); border-color:rgba(178,46,56,.25); color:#8f2730; }
+.booking-status-alert span { font-size:.82rem; color:var(--color-ink-soft); }
+.booking-detail-section-wide { grid-column:1 / -1; }
+.booking-section-heading { display:flex; gap:.75rem; align-items:flex-start; margin-bottom:1rem; }
+.booking-section-heading p { margin:0; }
+.booking-section-heading .vehicle-detail-section-title { margin:.15rem 0 0; }
+.booking-section-kicker { display:grid; place-items:center; width:30px; height:30px; border-radius:10px; background:rgba(36,74,155,.08); color:#244a9b; font-size:.72rem; font-weight:800; flex:0 0 30px; }
+.booking-vehicle-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.75rem; }
+.booking-vehicle-list > div { padding:.85rem 1rem; border:1px solid var(--color-paper-line); border-radius:12px; background:var(--color-paper-raised); }
+.booking-vehicle-list > div p:first-child { font-weight:800; }
+@media(max-width:640px){ .booking-detail-section-wide { grid-column:auto; } .booking-detail-head { align-items:flex-start; } }
+
+.booking-cancel-action{margin:0 0 1.25rem;display:flex;justify-content:flex-end}
+.booking-cancel-button{border-color:rgba(178,46,56,.3);color:#a22b35}
+.booking-cancel-panel{padding:1.35rem;margin-bottom:1.5rem;border-color:rgba(178,46,56,.2);background:#fffdfd}
+.booking-cancel-panel p{color:var(--color-ink-soft);line-height:1.6}
+.booking-cancel-panel label{font-size:.82rem;font-weight:700;color:var(--color-ink);margin-top:.6rem}
+.booking-cancel-panel input{width:min(320px,100%);padding:.7rem .8rem;border:1px solid var(--color-paper-line);border-radius:10px;margin-top:.45rem;font:inherit}
+
+.booking-cancel-panel{display:grid;gap:10px;padding:20px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff9f9);box-shadow:0 12px 30px rgba(20,35,60,.06)}.booking-cancel-panel h2{margin:0}.booking-cancel-panel label{margin-top:4px}.booking-cancel-panel .booking-detail-actions{margin:4px 0 0}.booking-issues-section{margin-top:1rem}.booking-issue-list{display:grid;gap:12px;margin-top:14px}.booking-issue-card{padding:14px;border:1px solid #e4eaf2;border-radius:14px;background:#fafcfe}.booking-issue-card>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px}.booking-issue-card>div:first-child>strong{font-size:.78rem;color:#2458ad}.booking-issue-card h3{margin:8px 0 5px;font-size:.98rem;color:#172440}.booking-issue-card>p{font-size:.84rem;color:#5f6e84;line-height:1.55}.booking-issue-empty{margin-top:14px;padding:18px;border:1px dashed #d5deea;border-radius:12px;text-align:center;color:#7a8799;font-size:.84rem}.issue-message{margin-top:9px;padding:9px 11px;border-radius:10px;background:#f0f3f7}.issue-message.customer{background:#eef5ff}.issue-message small{display:block;font-size:.68rem;font-weight:800;color:#718096}.issue-message span{display:block;margin-top:3px;font-size:.78rem;color:#40516a;line-height:1.45}.issue-status{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;background:#edf2f7;color:#52627b;font-size:.66rem;font-weight:800;text-transform:uppercase}.issue-open{background:#fff4d8;color:#9a6700}.issue-in_review{background:#eaf1ff;color:#315a9d}.issue-in_progress{background:#e7f0ff;color:#2458ad}.issue-resolved{background:#e7f7ed;color:#177245}.issue-closed{background:#eef0f3;color:#596575}

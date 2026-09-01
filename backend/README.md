@@ -128,3 +128,7 @@ This still requires:
 ## Cloudinary vehicle photos
 
 For production, set `STORAGE_PROVIDER=CLOUDINARY` and provide the three `CLOUDINARY_*` credentials. See `CLOUDINARY_SETUP.md`. Admin vehicle uploads are stored in Cloudinary and the database stores the secure URL/public ID plus admin-controlled `showInPortal`, `showOnLanding`, and `isPrimary` flags.
+
+## General Customer Chatbot
+
+The general customer chatbot at `/api/chatbot/chat` is fully local and deterministic. It does **not** call Groq, OpenAI, Botpress, or the Trip Planner. Its intent keywords, typo examples, redirects and safety rules are based on `backend/chatbot/Kuwarji_Travels_Chatbot_Training_Keywords.md`. Groq remains available only for the dedicated Trip Planner route if its environment variable is configured.

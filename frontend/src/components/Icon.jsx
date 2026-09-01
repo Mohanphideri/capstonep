@@ -1,0 +1,48 @@
+import React from "react";
+
+const paths = {
+  grid:<><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="14" width="7" height="7" rx="1.2"/></>,
+  message:<><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-4 3v-6.1a7.5 7.5 0 1 1 17-4.4Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></>,
+  calendar:<><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 9h18"/></>,
+  truck:<><path d="M3 7h11v9H3z"/><path d="M14 11h4l3 3v2h-7z"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></>,
+  bus:<><path d="M5 19V6.8C5 5.25 8.13 4 12 4s7 1.25 7 2.8V19"/><path d="M5 9h14M7 15h.01M17 15h.01M8 19v2M16 19v2"/></>,
+  tag:<><path d="M12.5 3H5a2 2 0 0 0-2 2v7.5L12.8 22l8.2-8.2L12.5 3Z"/><circle cx="8.2" cy="8.2" r="1.4"/></>,
+  star:<path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7Z"/>,
+  users:<><circle cx="9" cy="8" r="3.2"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0M15.5 5.2a3.2 3.2 0 0 1 0 6.1M17.5 14.3a6.2 6.2 0 0 1 4.2 5.7"/></>,
+  receipt:<><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></>,
+  chart:<><path d="M4 20V10M11 20V4M18 20v-7M3 20h18"/></>,
+  clipboard:<><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M8.5 11h7M8.5 15h7"/></>,
+  image:<><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 4 4"/></>,
+  settings:<><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V19.4a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 17.75a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 13a1.7 1.7 0 0 0-1.56-1.02H2.94a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 6.97a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.96 2.6a1.7 1.7 0 0 0 1.03-1.56V.94a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15.02 2.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V7a1.7 1.7 0 0 0 1.56 1.03h.06a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 13Z"/></>,
+  menu:<path d="M4 6h16M4 12h16M4 18h16"/>, close:<path d="M6 6l12 12M18 6 6 18"/>,
+  search:<><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></>,
+  bell:<><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></>,
+  user:<><circle cx="12" cy="8" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></>,
+  help:<><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 4.5 1.5c-.8 1-2.2 1.2-2.2 2.8M12 17h.01"/></>,
+  compass:<><circle cx="12" cy="12" r="9"/><path d="m15 9-3.5 1.5L10 14l3.5-1.5L15 9Z"/></>,
+  mapPin:<><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
+  clock:<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+  shield:<><path d="M12 3 20 6v5c0 5.2-3.4 8.8-8 10-4.6-1.2-8-4.8-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></>,
+  phone:<path d="M6.5 3.5 9 3l2 4-1.8 1.8a14 14 0 0 0 6 6L17 13l4 2-.5 2.5c-.3 1.5-1.7 2.5-3.2 2.2C10 18.2 5.8 14 3.8 6.7 3.5 5.2 4.5 3.8 6.5 3.5Z"/>,
+  mail:<><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></>,
+  check:<path d="m5 12 4 4L19 6"/>,
+  plus:<path d="M12 5v14M5 12h14"/>,
+  arrowRight:<path d="M5 12h14M13 6l6 6-6 6"/>,
+  arrowUp:<path d="M12 19V5M6 11l6-6 6 6"/>,
+  arrowDown:<path d="M12 5v14M6 13l6 6 6-6"/>,
+  arrowLeft:<path d="M19 12H5M11 18l-6-6 6-6"/>,
+  chevronDown:<path d="m6 9 6 6 6-6"/>,
+  download:<><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></>,
+  lock:<><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></>,
+  edit:<><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Z"/><path d="m13.5 6.5 4 4"/></>,
+  trash:<><path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></>,
+  filter:<><path d="M4 5h16M7 12h10M10 19h4"/></>,
+  eye:<><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></>,
+  send:<><path d="m3 11 18-8-8 18-2.5-7.5L3 11Z"/><path d="m10.5 13.5 4-4"/></>,
+  external:<><path d="M14 5h5v5M19 5l-8 8"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/></>,
+  whatsapp:<><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L4 20l1.1-3.7A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M9.2 8.2c.3-.7.6-.7 1-.7h.5c.2 0 .4.1.5.4l.8 2c.1.3.1.5-.1.7l-.6.8c.8 1.4 1.8 2.3 3.2 3.1l.8-.6c.2-.2.4-.2.7-.1l2 .8c.3.1.4.3.4.5v.5c0 .4 0 .7-.7 1-2 .9-5.2-.9-7.2-2.9s-3.8-5.2-2.9-7.2Z"/></>,
+};
+
+export default function Icon({name,size=18,strokeWidth=1.8,className=""}) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.help}</svg>;
+}

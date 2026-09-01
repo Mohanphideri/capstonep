@@ -1,18 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./Navbar.css";
 import { BrandLogo } from "./BrandLogo.jsx";
+import { useAuth } from "../AuthContext.jsx";
 
+const TRIP_PLANNER_PATH = "/trip-planner";
+
+// Only the actions a travelling customer actually needs up top — everything
+// else (About, FAQ, policies, office locations) lives in the footer.
 const links = [
-  { href: "/about", label: "About" },
-  { href: "/vehicles", label: "Vehicles" },
-  { href: "/fleet-gallery", label: "Fleet Gallery" },
-  { href: "/trip-maker", label: "Trip Maker" },
+  { href: "/vehicles", label: "Search Vehicles" },
   { href: "/tour-packages", label: "Tour Packages" },
-  { href: "/#how-it-works", label: "How it works" },
-  { href: "/why-us", label: "Why Us" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/about", label: "About" },
+  { href: "/location", label: "Contact" },
 ];
 
 function isRoutePath(href) {
@@ -36,21 +36,30 @@ function NavLink({ href, label, className, onClick }) {
 
 export function Navbar({ onOpenEnquiry }) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  function goToTripPlanner(closeMenu) {
+    if (closeMenu) setOpen(false);
+    navigate(TRIP_PLANNER_PATH);
+  }
 
   return (
     <header className="navbar">
       <div className="container navbar-row">
-        <BrandLogo variant="full" showTagline className="navbar-brand" onClick={() => setOpen(false)} />
+        <BrandLogo variant="full" className="navbar-brand" onClick={() => setOpen(false)} />
 
         <nav className="navbar-links">
           {links.map((link) => (
             <NavLink key={link.href} href={link.href} label={link.label} className="navbar-link" />
           ))}
+          <button type="button" className="navbar-link navbar-link-btn" onClick={() => goToTripPlanner(false)}>
+            Plan My Trip
+          </button>
         </nav>
 
         <div className="navbar-actions">
-          <span className="navbar-trust">Trusted travel partner</span>
-          <Link to="/login" className="btn btn-primary navbar-login-btn">
+          <Link to={user ? "/dashboard" : "/login"} className="btn btn-primary navbar-login-btn">
             Login
           </Link>
           <button
@@ -86,6 +95,11 @@ export function Navbar({ onOpenEnquiry }) {
                 />
               </li>
             ))}
+            <li>
+              <button type="button" className="navbar-mobile-link navbar-mobile-link-btn" onClick={() => goToTripPlanner(true)}>
+                Plan My Trip
+              </button>
+            </li>
           </ul>
         </nav>
       )}

@@ -1,5 +1,50 @@
 const express = require("express");
 const router = express.Router();
+const llm = require("../lib/llm");
+const { createRateLimiter } = require("../middleware/rateLimit");
+const { attachSessionIfPresent } = require("../middleware/requireAuth");
+
+// Trip Planner guest allowance: exactly 2 messages per 5-hour window.
+// Authenticated customers are not subject to this guest allowance.
+// The limiter is intentionally server-side so clearing localStorage cannot
+// bypass the free-message rule. This in-memory store should be moved to Redis
+// when the deployment runs multiple backend instances.
+const GUEST_WINDOW_MS = 5 * 60 * 60 * 1000;
+const GUEST_MAX_MESSAGES = 2;
+const guestUsage = new Map();
+
+function getClientKey(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return forwarded || req.ip || "unknown";
+}
+
+function chatRateLimit(req, res, next) {
+  if (req.session) return next();
+
+  const key = getClientKey(req);
+  const now = Date.now();
+  let entry = guestUsage.get(key);
+  if (!entry || entry.resetAt <= now) {
+    entry = { count: 0, resetAt: now + GUEST_WINDOW_MS };
+    guestUsage.set(key, entry);
+  }
+
+  if (entry.count >= GUEST_MAX_MESSAGES) {
+    const retryAfterMs = Math.max(0, entry.resetAt - now);
+    return res.status(429).json({
+      success: false,
+      error: `You've used your 2 free Trip Planner messages. They reset automatically in 5 hours.`,
+      retryAfterMs,
+      resetAt: entry.resetAt,
+      remaining: 0,
+    });
+  }
+
+  entry.count += 1;
+  res.setHeader("X-Trip-Planner-Free-Remaining", String(Math.max(0, GUEST_MAX_MESSAGES - entry.count)));
+  res.setHeader("X-Trip-Planner-Free-Reset", String(entry.resetAt));
+  return next();
+}
 
 const REGIONS = {
   Punjab: ["Amritsar", "Anandpur Sahib", "Patiala"],
@@ -21,6 +66,8 @@ function firstMatch(text, patterns) {
   return patterns.find((p) => p.re.test(text));
 }
 
+// Deterministic, keyword-based fallback used to shape a reply when no
+// GROQ_API_KEY is configured, or a Groq call fails/times out.
 function analyzePrompt(input) {
   const text = String(input || "").trim();
   const q = text.toLowerCase();
@@ -78,8 +125,6 @@ function analyzePrompt(input) {
   else if (/adventure|trek|rafting/.test(q)) intent = "adventure escape";
   else if (/family|kids/.test(q)) intent = "family holiday";
 
-  const confidence = Math.min(99, 58 + entities.length * 6 + preferences.length * 4 + constraints.length * 5 + (dates.length ? 7 : 0));
-  const routeQuality = places.length >= 2 ? "multi-stop route" : places.length === 1 ? "single-anchor route" : "destination discovery needed";
   const plannerNotes = [];
   if (!day) plannerNotes.push("Trip length is missing; start with 2–3 days and refine after the destination is confirmed.");
   if (!places.length) plannerNotes.push("No supported destination was detected; ask for a city, state or region.");
@@ -90,15 +135,12 @@ function analyzePrompt(input) {
   if (preferences.includes("food")) plannerNotes.push("Add local-food windows without treating restaurants as confirmed bookings.");
 
   return {
-    success: true,
     analysis: {
       raw: text,
       intent,
-      confidence,
       entities,
       constraints,
       preferences: [...new Set(preferences)],
-      routeQuality,
       days: day ? Number(day[1]) : null,
       travelers: people ? Number(people[1]) : null,
       children: children ? Number(children[1]) : 0,
@@ -111,50 +153,57 @@ function analyzePrompt(input) {
         !day ? "How many days should I plan?" : null,
         !people ? "How many travellers are going?" : null,
       ].filter(Boolean),
-      safety: "Recommendations are planning proposals only. Fleet availability, hotel inventory, activities, timings and prices require confirmation by Kuwarji Travels.",
     },
   };
 }
 
-router.post("/analyze", (req, res) => {
+// Dedicated Trip Planner endpoint. The general customer chatbot uses the
+// separate /api/chatbot endpoint and never opens this flow.
+router.post("/chat", attachSessionIfPresent, chatRateLimit, async (req, res) => {
   try {
-    const { prompt } = req.body || {};
-    if (typeof prompt !== "string" || prompt.trim().length < 3) {
-      return res.status(400).json({ success: false, error: "Please provide a trip description." });
+    const { messages } = req.body || {};
+    if (!Array.isArray(messages) || !messages.length) {
+      return res.status(400).json({ success: false, error: "messages array is required." });
     }
-    if (prompt.length > 3000) return res.status(400).json({ success: false, error: "Trip description is too long." });
-    return res.json(analyzePrompt(prompt));
+    const trimmed = messages
+      .slice(-12)
+      .map((m) => ({ role: m?.role === "assistant" ? "assistant" : "user", text: String(m?.text || "").slice(0, 2000) }))
+      .filter((m) => m.text.trim().length);
+    if (!trimmed.length) return res.status(400).json({ success: false, error: "messages array is required." });
+
+    const reply = await llmChatReply(trimmed);
+    return res.json({ success: true, reply });
   } catch (err) {
-    return res.status(500).json({ success: false, error: "Trip planner could not analyze the request." });
+    return res.status(500).json({ success: false, error: "The assistant is temporarily unavailable." });
   }
 });
 
-router.post("/plan", (req, res) => {
-  try {
-    const { plan = {} } = req.body || {};
-    const days = Math.max(1, Math.min(30, Number(plan.days || 3)));
-    const places = Array.isArray(plan.selectedPlaces) && plan.selectedPlaces.length ? plan.selectedPlaces : ["Flexible destination day"];
-    const interests = Array.isArray(plan.interests) && plan.interests.length ? plan.interests : ["sightseeing"];
-    const pace = plan.pace || "balanced";
-    const style = plan.style || "family";
-    const itinerary = Array.from({ length: days }, (_, i) => {
-      const place = places[i % places.length];
-      const next = places[(i + 1) % places.length];
-      const transfer = i === 0 ? `Begin from ${plan.start || "your pickup point"} toward ${place}.` : `Use ${pace} routing around ${place}${next !== place ? ` and nearby ${next}` : ""}.`;
-      const activity = interests.slice(0, 3).join(", ");
-      return {
-        day: i + 1,
-        title: i === 0 ? `Arrival & ${place}` : `${place} · ${activity}`,
-        morning: `${transfer} Start around ${plan.dailyStart || "08:00"} with a realistic buffer.`,
-        afternoon: `Build the main ${activity} block, with a ${plan.mealPreference || "local"} meal break and recovery time.`,
-        evening: style === "premium" ? "Comfort-first evening with flexible local exploration." : "Relaxed local time and target return before the preferred cutoff.",
-        body: `AI-planned day ${i + 1}: ${transfer} Prioritize ${activity}. This is a proposal, not a confirmed booking.`,
-      };
-    });
-    res.json({ success: true, itinerary, planVersion: Date.now() });
-  } catch (err) {
-    res.status(500).json({ success: false, error: "Trip plan generation failed." });
+async function llmChatReply(messages) {
+  const regionList = Object.keys(REGIONS)
+    .map((r) => `${r === "JammuAndKashmir" ? "Jammu & Kashmir" : r}: ${REGIONS[r].join(", ")}`)
+    .join("\n");
+
+  if (llm.isConfigured()) {
+    const system = `You are the friendly AI trip-planning assistant on the Kuwarji Travels website, a bus/car/tempo-traveller rental company in India. Kuwarji currently plans trips to these destinations only — steer the conversation toward them and never invent other destinations:
+${regionList}
+
+Have a natural, helpful conversation about the traveller's trip idea: ask a clarifying question if key details (destination, days, group size) are missing, or give a short, concrete suggestion (route, pace, ideal trip length) if you have enough to work with. Keep replies conversational, under about 120 words, and no more than 30 lines. Never invent confirmed prices, hotel names, or exact bus availability — remind the traveller that a real quote comes from the Kuwarji team via an enquiry. Respond with ONLY a single JSON object of the shape {"reply": "your response text"} — no markdown fences, no extra keys.`;
+
+    const conversation = messages.map((m) => `${m.role === "assistant" ? "Assistant" : "Traveller"}: ${m.text}`).join("\n");
+    const parsed = await llm.askForJson({ system, user: conversation, temperature: 0.6 });
+    if (parsed && typeof parsed.reply === "string" && parsed.reply.trim()) return parsed.reply.trim();
   }
-});
+
+  // Fallback — used when no GROQ_API_KEY is configured, or the call failed.
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const analysis = analyzePrompt(lastUser?.text || "").analysis;
+  const bits = [];
+  if (analysis.destinations?.length) bits.push(`heading to ${analysis.destinations.join(", ")}`);
+  if (analysis.days) bits.push(`${analysis.days} days`);
+  if (analysis.travelers) bits.push(`${analysis.travelers} travellers`);
+  const summary = bits.length ? bits.join(", ") : "your trip";
+  const ask = analysis.nextQuestions?.[0];
+  return `Got it — noting ${summary}. ${ask ? ask + " " : ""}Tell me a bit more and I can sketch a day-by-day plan matched to the Kuwarji fleet, or send an enquiry when you're ready.`;
+}
 
 module.exports = router;

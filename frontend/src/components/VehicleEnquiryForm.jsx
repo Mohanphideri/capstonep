@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api.js";
+import { useAuth } from "../AuthContext.jsx";
+import { useEnquiryCart } from "../EnquiryCartContext.jsx";
 import { useMsg91Widget, otpErrorMessage, useCooldown } from "../hooks/useMsg91Widget.js";
 import "./OtpLogin.css";
 import "./EnquiryForm.css";
@@ -27,12 +29,14 @@ const TRIP_TYPES = [
  * This never books anything, checks availability, or shows a price —
  * submitting only creates an Enquiry row for the team to follow up on.
  */
-export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
+export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted, clearCartOnSuccess = false }) {
   // Accepts either a single `vehicle` (legacy single-vehicle enquiry from
   // a vehicle detail page) or a `vehicles` array (multi-vehicle enquiry
   // from the cart on the listing page) — normalized to one list so the
   // rest of the form doesn't need to care which caller it came from.
   const selectedVehicles = vehicles?.length ? vehicles : vehicle ? [vehicle] : [];
+  const { user } = useAuth();
+  const { clear: clearEnquiryCart } = useEnquiryCart();
   const { configured, widgetReady } = useMsg91Widget();
   const [cooldown, startCooldown] = useCooldown(RESEND_COOLDOWN_SECONDS);
 
@@ -85,8 +89,18 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
   }, []);
 
   useEffect(() => {
-    if (configured) loadCaptcha();
-  }, [configured, loadCaptcha]);
+    if (user) {
+      const normalizedPhone = (user.phone || "").replace(/\D/g, "");
+      setName(user.name || "");
+      setPhone(normalizedPhone);
+      setEmail(user.email || "");
+      setOtpStage("verified");
+      setVerifiedPhone(normalizedPhone);
+      setAccessToken(null);
+    } else if (configured) {
+      loadCaptcha();
+    }
+  }, [user, configured, loadCaptcha]);
 
   function handlePhoneChange(value) {
     const digits = value.replace(/\D/g, "").slice(0, 10);
@@ -225,7 +239,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
       setError("Enter your name.");
       return;
     }
-    if (otpStage !== "verified" || !accessToken || verifiedPhone !== phone) {
+    if (!user && (otpStage !== "verified" || !accessToken || verifiedPhone !== phone)) {
       setError("Verify your mobile number with the OTP before submitting.");
       return;
     }
@@ -250,7 +264,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
           passengers: passengers ? Number(passengers) : undefined,
           tripType: tripType || undefined,
           message: message.trim() || undefined,
-          accessToken,
+          accessToken: user ? undefined : accessToken,
         }),
       });
 
@@ -260,6 +274,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
         return;
       }
 
+      if (clearCartOnSuccess) clearEnquiryCart();
       setSubmitted(true);
       setSubmitting(false);
       onSubmitted?.();
@@ -269,7 +284,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
     }
   }
 
-  if (!configured) {
+  if (!user && !configured) {
     return (
       <div className="ticket enquiry-card">
         <p className="enquiry-config-warning">
@@ -345,7 +360,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
             onChange={(e) => handlePhoneChange(e.target.value)}
             placeholder="98765 43210"
             className="otp-phone-input"
-            disabled={otpStage === "sending" || otpStage === "verifying"}
+            disabled={Boolean(user) || otpStage === "sending" || otpStage === "verifying"}
           />
           {phoneVerified && <span className="enquiry-verified-badge">Verified</span>}
         </div>
@@ -474,12 +489,12 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
         />
       </div>
 
-      {/* OTP verification gate */}
-      <div className="enquiry-otp-block">
+      {/* OTP verification gate — guests only. Logged-in customers are already verified. */}
+      {!user && <div className="enquiry-otp-block">
         {otpStage !== "sent" && otpStage !== "verifying" && !phoneVerified && (
           <>
             <div className="otp-captcha-header">
-              <span className="otp-label-text">Verification code</span>
+              <span className="otp-label-text">Enter the security code</span>
               <button
                 type="button"
                 onClick={loadCaptcha}
@@ -503,7 +518,7 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
                 type="text"
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
-                placeholder="Type the code"
+                placeholder="Enter code shown above"
                 className="otp-captcha-input"
                 autoComplete="off"
               />
@@ -555,15 +570,15 @@ export function VehicleEnquiryForm({ vehicle, vehicles, onSubmitted }) {
             ✓ Mobile number verified — you can submit your enquiry now.
           </p>
         )}
-      </div>
+      </div>}
 
       {error && <p className="otp-error">{error}</p>}
 
       <button
         type="submit"
         className="btn btn-primary btn-block"
-        disabled={!phoneVerified || submitting}
-        title={!phoneVerified ? "Verify your mobile number with OTP first" : undefined}
+        disabled={(!user && !phoneVerified) || submitting}
+        title={!user && !phoneVerified ? "Verify your mobile number with OTP first" : undefined}
       >
         {submitting ? "Sending…" : "Submit enquiry"}
       </button>

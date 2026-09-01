@@ -694,3 +694,5 @@
 .admin-fleet-item-meta>span{font-size:11px;font-weight:750;color:#425675}
 @media(max-width:900px){.admin-page-body .ticket{padding:15px!important}.admin-page-body h2{font-size:18px}.admin-page-body .admin-table{min-width:720px}}
 @media(max-width:600px){.admin-page-body p,.admin-page-body label,.admin-page-body li{font-size:12px}.admin-page-body .admin-input,.admin-page-body .admin-select,.admin-page-body .admin-textarea{font-size:12px}.admin-page-body .btn{font-size:11px}.admin-fleet-toolbar .admin-form-field{width:100%;min-width:0}}
+
+.admin-date-filter{display:flex;flex-direction:column;gap:4px;min-width:10rem;flex:0 1 12rem}.admin-date-filter>span{font-size:.72rem;font-weight:700;color:var(--color-ink-muted)}

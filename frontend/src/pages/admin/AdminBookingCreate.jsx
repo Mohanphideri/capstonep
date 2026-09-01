@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../api.js";
 import { AdminLayout } from "../../components/AdminLayout.jsx";
@@ -66,7 +66,7 @@ export default function AdminBookingCreate() {
       }
 
       if (enquiriesRes?.ok && enquiriesRes.data?.success) {
-        setEnquiries(enquiriesRes.data.enquiries || []);
+        setEnquiries(Array.from(new Map((enquiriesRes.data.enquiries || []).map((item) => [item.id, item])).values()));
       }
 
       if (enquiryRes && enquiryRes.ok && enquiryRes.data?.success) {

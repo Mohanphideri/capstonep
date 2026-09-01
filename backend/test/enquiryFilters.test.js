@@ -44,8 +44,8 @@ test("escapes regex special characters in the search term", () => {
 
 test("combines status + vehicleId + search into one filter", () => {
   const id = new mongoose.Types.ObjectId().toString();
-  const filter = buildEnquiryFilter({ status: "CONTACTED", vehicleId: id, search: "delhi" });
-  assert.equal(filter.status, "CONTACTED");
+  const filter = buildEnquiryFilter({ status: "BOOKED", vehicleId: id, search: "delhi" });
+  assert.equal(filter.status, "BOOKED");
   assert.equal(filter.vehicleId, id);
   assert.ok(filter.$or);
 });

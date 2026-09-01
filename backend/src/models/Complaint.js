@@ -16,6 +16,11 @@ const ComplaintSchema = new mongoose.Schema(
     ticketId: { type: String, required: true, unique: true, index: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: "Booking", required: true, index: true },
+    // Optional vehicle snapshot for bookings containing multiple vehicles.
+    // The booking remains the primary issue scope; this only identifies which
+    // vehicle the customer is reporting when more than one was booked.
+    vehicleIndex: { type: Number, min: 0, default: null },
+    vehicleName: { type: String, trim: true, default: "" },
     category: {
       type: String,
       enum: [

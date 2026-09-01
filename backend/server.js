@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
 
 const { env } = require("./src/env");
 const authRoutes = require("./src/routes/auth");
@@ -15,11 +16,9 @@ const adminAmenityRoutes = require("./src/routes/adminAmenities");
 const adminEnquiryRoutes = require("./src/routes/adminEnquiries");
 const adminBookingRoutes = require("./src/routes/adminBookings");
 const adminInvoiceRoutes = require("./src/routes/adminInvoices");
-const adminCustomerRoutes = require("./src/routes/adminCustomers");
 const adminSettingsRoutes = require("./src/routes/adminSettings");
 const bannerRoutes = require("./src/routes/banner");
 const siteContentRoutes = require("./src/routes/siteContent");
-const adminAuditLogRoutes = require("./src/routes/adminAuditLogs");
 const adminReportRoutes = require("./src/routes/adminReports");
 const adminBalanceSheetRoutes = require("./src/routes/adminBalanceSheet");
 const vehicleRoutes = require("./src/routes/vehicles");
@@ -27,10 +26,14 @@ const bookingRoutes = require("./src/routes/bookings");
 const invoiceRoutes = require("./src/routes/invoices");
 const myEnquiryRoutes = require("./src/routes/myEnquiries");
 const complaintRoutes = require("./src/routes/complaints");
+const adminComplaintRoutes = require("./src/routes/adminComplaints");
 const reviewRoutes = require("./src/routes/reviews");
 const faqRoutes = require("./src/routes/faqs");
 const tourPackageRoutes = require("./src/routes/tourPackages");
 const tripPlannerRoutes = require("./src/routes/tripPlanner");
+const chatbotRoutes = require("./src/routes/chatbot");
+const notificationRoutes = require("./src/routes/notifications");
+const locationRoutes = require("./src/routes/locations");
 const adminReviewRoutes = require("./src/routes/adminReviews");
 const { connectToDatabase } = require("./src/lib/mongodb");
 const { UPLOAD_ROOT } = require("./src/lib/storage/LocalStorageProvider");
@@ -38,12 +41,18 @@ const { ensureAdminSeed } = require("./src/lib/adminSeed");
 const { ensureSiteSettingsSeed } = require("./src/lib/siteSettings");
 const { autoCompleteDueBookings } = require("./src/lib/bookingCompletion");
 const { Review } = require("./src/models/Review");
+const { Enquiry } = require("./src/models/Enquiry");
 
 const app = express();
 
 // Render sits behind a proxy — needed so `secure` cookies and
 // `x-forwarded-for` IPs behave correctly.
 app.set("trust proxy", 1);
+
+// Standard security headers (X-Content-Type-Options, X-Frame-Options, etc.).
+// CSP is left off here — this is a JSON API, not the page that renders
+// HTML, so a CSP belongs on the frontend host (Vercel) instead.
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // Allow the deployed Vercel frontend (and local dev) to call this API
 // with credentials (cookies) attached.
@@ -82,22 +91,31 @@ app.use("/uploads", express.static(UPLOAD_ROOT));
 app.use("/api/auth", authRoutes);
 app.use("/api/captcha", captchaRoutes);
 app.use("/api/enquiry", enquiryRoutes);
-app.use("/api/admin", adminRoutes);
+// The generic "/api/admin" router (adminRoutes) is mounted LAST among the
+// /api/admin/* registrations below, on purpose: Express matches mounted
+// routers in registration order, and "/api/admin" as a prefix would also
+// match "/api/admin/customers", "/api/admin/audit-logs", etc. Mounting it
+// first would let its own requireAdmin gate intercept every admin
+// sub-route before the more specific routers below ever ran their own
+// (often stricter, e.g. requireSuperAdmin) auth check — silently making
+// those checks unreachable dead code for any rejected request. Keeping
+// the specific routers first ensures each one's own auth middleware is
+// the one that actually runs.
 app.use("/api/admin/vehicles", adminVehicleRoutes);
 app.use("/api/admin/categories", adminCategoryRoutes);
 app.use("/api/admin/amenities", adminAmenityRoutes);
 app.use("/api/admin/enquiries", adminEnquiryRoutes);
 app.use("/api/admin/bookings", adminBookingRoutes);
 app.use("/api/admin/invoices", adminInvoiceRoutes);
-app.use("/api/admin/customers", adminCustomerRoutes);
 app.use("/api/admin/settings", adminSettingsRoutes);
 app.use("/api/banner", bannerRoutes);
 app.use("/api/site-content", siteContentRoutes);
 app.use("/api/admin/banner", bannerRoutes);
-app.use("/api/admin/audit-logs", adminAuditLogRoutes);
 app.use("/api/admin/reports", adminReportRoutes);
 app.use("/api/admin/balance-sheet", adminBalanceSheetRoutes);
 app.use("/api/admin/reviews", adminReviewRoutes);
+app.use("/api/admin/issues", adminComplaintRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/invoices", invoiceRoutes);
@@ -107,6 +125,9 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/tour-packages", tourPackageRoutes);
 app.use("/api/trip-planner", tripPlannerRoutes);
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/locations", locationRoutes);
 
 // 404 fallback
 app.use((req, res) => {
@@ -127,6 +148,14 @@ connectToDatabase()
   .then(async () => {
     await ensureAdminSeed();
     await ensureSiteSettingsSeed();
+    // Backward-compatible enquiry status migration. Existing records are
+    // preserved while legacy workflow values are normalized to the new
+    // production lifecycle required by the update specification.
+    try {
+      await Enquiry.updateMany({ status: { $in: ["IN_REVIEW", "CONTACTED", "QUOTED"] } }, { $set: { status: "BOOKED" } });
+      await Enquiry.updateMany({ status: "SELECTED_FOR_BOOKING" }, { $set: { status: "BOOKED" } });
+      await Enquiry.updateMany({ status: "CONVERTED" }, { $set: { status: "BOOKING" } });
+    } catch (migrationError) { console.error("[enquiry migration] skipped:", migrationError.message); }
     // Older deployments used a non-sparse unique bookingId index on reviews.
     // Remove it once so admin-created reviews (which have no booking) can coexist.
     try {

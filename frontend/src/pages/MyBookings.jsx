@@ -30,12 +30,6 @@ export default function MyBookings() {
 
   return (
     <ConsumerLayout title="My Bookings" lead="Review upcoming, past, and cancelled journeys from one place.">
-        <p className="eyebrow">
-          <Link to="/dashboard" className="my-bookings-back">
-            ← Dashboard
-          </Link>
-        </p>
-
         <div className="my-bookings-tabs">
           {TABS.map((t) => (
             <button
@@ -59,24 +53,26 @@ export default function MyBookings() {
           <div className="my-bookings-list">
             {bookings.map((b) => (
               <Link key={b.bookingId} to={`/dashboard/bookings/${b.bookingId}`} className="ticket my-booking-card">
-                <div>
-                  <p className="eyebrow-muted">{b.bookingId}</p>
+                <div className="my-booking-main">
+                  <div className="my-booking-id-row"><p className="eyebrow-muted">Booking ID</p><strong>{b.bookingId}</strong></div>
                   <p className="my-booking-vehicle">{b.vehicles.map((v) => v.name).join(", ")}</p>
                   <p className="my-booking-route">
                     {b.journey.pickup} → {b.journey.destination}
                   </p>
-                  <p className="my-booking-dates">
+                  <p className="my-booking-dates"><span>Travel date</span>
                     {formatDate(b.journey.journeyStart)}
                     {b.journey.journeyEnd ? ` – ${formatDate(b.journey.journeyEnd)}` : ""}
                   </p>
                 </div>
                 <div className="my-booking-meta">
                   <span className={`my-booking-status status-${b.status.toLowerCase()}`}>
-                    {b.status.replace(/_/g, " ")}
+                    {b.status === "CANCELLED" ? "Cancelled" : b.status === "CONFIRMED" ? "Confirmed" : b.status.replace(/_/g, " ")}
                   </span>
-                  {b.pricing?.totalAmount > 0 && (
+                  {b.status === "CANCELLED" && b.refundAmount > 0 ? (
+                    <span className="my-booking-refund">Refund ₹{Number(b.refundAmount).toLocaleString("en-IN")}</span>
+                  ) : b.pricing?.totalAmount > 0 ? (
                     <span className="my-booking-amount">₹{b.pricing.totalAmount}</span>
-                  )}
+                  ) : null}
                 </div>
               </Link>
             ))}

@@ -6,16 +6,19 @@ import { AuthProvider } from "./AuthContext.jsx";
 import { EnquiryCartProvider } from "./EnquiryCartContext.jsx";
 import "./styles/index.css";
 import GlobalLoadingBus from "./components/GlobalLoadingBus.jsx";
+import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <EnquiryCartProvider>
-          <App />
-          <GlobalLoadingBus />
-        </EnquiryCartProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <EnquiryCartProvider>
+            <App />
+            <GlobalLoadingBus />
+          </EnquiryCartProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

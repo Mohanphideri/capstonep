@@ -15,6 +15,8 @@ const { getSiteSettings } = require("../lib/siteSettings");
 const { sendTransactionalEmail } = require("../lib/brevo");
 const { bookingConfirmationEmail, bookingCancellationEmail } = require("../lib/emailTemplates");
 const { createNotification } = require("../lib/notify");
+const { parseDateRange } = require("../lib/dateRange");
+const { normalizePhone } = require("../lib/msg91");
 
 const router = express.Router();
 
@@ -24,6 +26,14 @@ router.use(requireSuperAdmin);
 
 function isValidId(id) {
   return mongoose.Types.ObjectId.isValid(id);
+}
+
+// The admin UI links to a booking using either its Mongo _id or its
+// human-readable bookingId (e.g. "KWT-2026-00842") depending on which page
+// built the link — so every route keyed on :id must accept both, exactly
+// like the existing GET detail and PDF-download routes already do.
+function bookingLookupQuery(idParam) {
+  return isValidId(idParam) ? { _id: idParam } : { bookingId: idParam };
 }
 
 function serializeBooking(b) {
@@ -39,6 +49,11 @@ function serializeBooking(b) {
     status: b.status,
     bookingDate: b.bookingDate,
     terms: b.terms,
+    cancelledAt: b.cancelledAt,
+    cancellationReason: b.cancellationReason,
+    refundAmount: Number(b.refundAmount || 0),
+    refundStatus: b.refundStatus || "NOT_APPLICABLE",
+    refundExpectedDays: b.refundExpectedDays || "5–7 business days",
     adminNotes: b.adminNotes || [],
     createdAt: b.createdAt,
     updatedAt: b.updatedAt,
@@ -70,6 +85,9 @@ router.get("/", async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
     const filter = {};
+    const range = parseDateRange(req.query.from, req.query.to);
+    if (!range) return res.status(400).json({success:false,error:"Invalid date range."});
+    filter.createdAt = { $gte: range.start, $lte: range.end };
     if (req.query.status) filter.status = req.query.status;
     if (req.query.search) {
       const term = req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -96,9 +114,8 @@ router.get("/", async (req, res) => {
 // --- Detail ---
 router.get("/:id", async (req, res) => {
   try {
-    const query = isValidId(req.params.id) ? { _id: req.params.id } : { bookingId: req.params.id };
     await connectToDatabase();
-    const booking = await Booking.findOne(query).lean();
+    const booking = await Booking.findOne(bookingLookupQuery(req.params.id)).lean();
     if (!booking) return res.status(404).json({ success: false, error: "Booking not found." });
     return res.json({ success: true, booking: serializeBooking(booking) });
   } catch (err) {
@@ -174,7 +191,10 @@ router.post("/", async (req, res) => {
     if (d.enquiryId) {
       enquiry = await Enquiry.findById(d.enquiryId);
       if (!enquiry) return res.status(404).json({ success: false, error: "Enquiry not found." });
-      if (enquiry.status !== "SELECTED_FOR_BOOKING") {
+      // BOOKED is the normal pre-conversion state. BOOKING-with-no-real-
+      // booking is a pre-fix data state (see adminEnquiries.js) that we
+      // still allow converting so it isn't permanently stuck.
+      if (!["BOOKED", "BOOKING"].includes(enquiry.status)) {
         return res.status(409).json({ success: false, error: "Only enquiries selected for booking can be converted." });
       }
       if (enquiry.convertedToBookingId) {
@@ -195,6 +215,11 @@ router.post("/", async (req, res) => {
     if (!customerSnapshot) {
       return res.status(400).json({ success: false, error: "Customer details are required." });
     }
+    const normalizedCustomerPhone = normalizePhone(customerSnapshot.phone || "");
+    if (normalizedCustomerPhone.length !== 10) {
+      return res.status(400).json({ success: false, error: "A valid 10-digit customer mobile number is required." });
+    }
+    customerSnapshot = { ...customerSnapshot, phone: normalizedCustomerPhone };
 
     // Every booking is tied to a User record so it can appear in that
     // customer's portal — find-or-create by phone, matching the OTP
@@ -261,7 +286,7 @@ router.post("/", async (req, res) => {
 
     if (enquiry) {
       enquiry.convertedToBookingId = booking._id;
-      enquiry.status = "CONVERTED";
+      enquiry.status = "BOOKING";
       await enquiry.save();
     }
 
@@ -335,9 +360,6 @@ const updateBookingSchema = z.object({
 
 router.patch("/:id", async (req, res) => {
   try {
-    if (!isValidId(req.params.id)) {
-      return res.status(400).json({ success: false, error: "Invalid booking id." });
-    }
     const parsed = updateBookingSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message ?? "Invalid request." });
@@ -345,7 +367,7 @@ router.patch("/:id", async (req, res) => {
     const d = parsed.data;
 
     await connectToDatabase();
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findOne(bookingLookupQuery(req.params.id));
     if (!booking) return res.status(404).json({ success: false, error: "Booking not found." });
 
     if (d.journey) {
@@ -364,13 +386,56 @@ router.patch("/:id", async (req, res) => {
       p.amountReceived = Math.min(p.amountReceived || 0, p.totalAmount);
       p.balanceAmount = Math.max(0, p.totalAmount - p.amountReceived);
     }
-    if (d.status) booking.status = d.status;
+    const previousStatus = booking.status;
+    if (d.status) {
+      // A customer cancellation is final from the admin UI/API. Admins may
+      // still add notes or view the record, but cannot overwrite CANCELLED
+      // back to CONFIRMED/another status.
+      if (booking.status === "CANCELLED" && d.status !== "CANCELLED") {
+        return res.status(409).json({ success:false, error:"This booking was cancelled and cannot be reopened or overwritten." });
+      }
+      booking.status = d.status;
+      if (d.status === "CANCELLED") {
+        booking.cancelledAt = booking.cancelledAt || new Date();
+        booking.refundAmount = Number(booking.pricing?.amountReceived || 0);
+        booking.refundStatus = booking.refundAmount > 0 ? "REFUND_PENDING" : "NOT_APPLICABLE";
+        booking.refundExpectedDays = "5–7 business days";
+      } else {
+        booking.cancelledAt = null;
+        booking.refundAmount = 0;
+        booking.refundStatus = "NOT_APPLICABLE";
+      }
+    }
     if (d.terms !== undefined) booking.terms = d.terms;
     if (d.note) {
       booking.adminNotes.push({ note: d.note, addedBy: req.session.userId });
     }
 
     await booking.save();
+    if (booking.status === "CANCELLED") {
+      const { Enquiry } = require("../models/Enquiry");
+      await Enquiry.updateOne({ convertedToBookingId: booking._id }, { $set: { status: "CANCELLED" } });
+    }
+
+    // Keep an existing invoice synchronized when booking pricing is edited.
+    // This prevents different balance values appearing in invoice, booking,
+    // balance-sheet and customer views.
+    if (d.pricing) {
+      const { Invoice } = require("../models/Invoice");
+      const invoice = await Invoice.findOne({ bookingId: booking._id });
+      if (invoice) {
+        invoice.total = Number(booking.pricing.totalAmount || 0);
+        invoice.amountReceived = Math.min(Number(booking.pricing.amountReceived || 0), invoice.total);
+        invoice.balance = Math.max(0, invoice.total - invoice.amountReceived);
+        await invoice.save();
+      }
+    }
+
+    if (previousStatus !== booking.status && booking.status === "CANCELLED") {
+      createNotification({ userId: booking.userId, type: "BOOKING_CANCELLED", channel: "IN_APP", title: "Booking cancelled", message: `Your booking ${booking.bookingId} has been cancelled by Kuwarji Travels.`, bookingId: booking._id });
+    } else if (previousStatus !== booking.status && booking.status === "CONFIRMED") {
+      createNotification({ userId: booking.userId, type: "BOOKING_CONFIRMED", channel: "IN_APP", title: "Booking confirmed", message: `Your booking ${booking.bookingId} has been confirmed by Kuwarji Travels.`, bookingId: booking._id });
+    }
 
     await recordAuditLog({
       req,
@@ -390,9 +455,8 @@ router.patch("/:id", async (req, res) => {
 // --- Send booking PDF by email (manual admin action only) ---
 router.post("/:id/email", async (req, res) => {
   try {
-    if (!isValidId(req.params.id)) return res.status(400).json({ success: false, error: "Invalid booking id." });
     await connectToDatabase();
-    const booking = await Booking.findById(req.params.id).lean();
+    const booking = await Booking.findOne(bookingLookupQuery(req.params.id)).lean();
     if (!booking) return res.status(404).json({ success: false, error: "Booking not found." });
     if (!booking.customerSnapshot.email) {
       return res.status(400).json({ success: false, error: "This customer has no email on file." });
@@ -424,17 +488,31 @@ router.post("/:id/email", async (req, res) => {
 // --- Cancel a booking ---
 router.post("/:id/cancel", async (req, res) => {
   try {
-    if (!isValidId(req.params.id)) {
-      return res.status(400).json({ success: false, error: "Invalid booking id." });
-    }
     await connectToDatabase();
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findOne(bookingLookupQuery(req.params.id));
     if (!booking) return res.status(404).json({ success: false, error: "Booking not found." });
 
+    if (booking.status === "CANCELLED") {
+      return res.status(409).json({ success:false, error:"This booking is already cancelled and cannot be overwritten." });
+    }
     booking.status = "CANCELLED";
     booking.cancelledAt = new Date();
     booking.cancellationReason = req.body?.reason || null;
+    booking.refundAmount = Number(booking.pricing?.amountReceived || 0);
+    booking.refundStatus = booking.refundAmount > 0 ? "REFUND_PENDING" : "NOT_APPLICABLE";
+    booking.refundExpectedDays = "5–7 business days";
     await booking.save();
+    const { Enquiry } = require("../models/Enquiry");
+    await Enquiry.updateOne({ convertedToBookingId: booking._id }, { $set: { status: "CANCELLED" } });
+
+    createNotification({
+      userId: booking.userId,
+      type: "BOOKING_CANCELLED",
+      channel: "IN_APP",
+      title: "Booking cancelled",
+      message: `Your booking ${booking.bookingId} has been cancelled by Kuwarji Travels.`,
+      bookingId: booking._id,
+    });
 
     await recordAuditLog({
       req,
@@ -465,9 +543,8 @@ router.post("/:id/cancel", async (req, res) => {
 // --- Download PDF ---
 router.get("/:id/pdf", async (req, res) => {
   try {
-    const query = isValidId(req.params.id) ? { _id: req.params.id } : { bookingId: req.params.id };
     await connectToDatabase();
-    const booking = await Booking.findOne(query).lean();
+    const booking = await Booking.findOne(bookingLookupQuery(req.params.id)).lean();
     if (!booking) return res.status(404).json({ success: false, error: "Booking not found." });
     const pdfSettings = await getSiteSettings();
     booking.businessSnapshot = { ...(booking.businessSnapshot || {}), authorizedSignatory: pdfSettings.authorizedSignatory ? { ...pdfSettings.authorizedSignatory, signatureUrl: pdfSettings.signatureUrl } : null };

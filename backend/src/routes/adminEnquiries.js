@@ -7,6 +7,7 @@ const { Vehicle } = require("../models/Vehicle");
 const { requireSuperAdmin } = require("../middleware/requireAuth");
 const { recordAuditLog } = require("../lib/auditLog");
 const { buildEnquiryFilter, STATUS_VALUES } = require("../lib/enquiryFilters");
+const { parseDateRange } = require("../lib/dateRange");
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ function serializeSummary(e, vehicleById) {
     tripType: e.tripType,
     status: e.status,
     convertedToBookingId: e.convertedToBookingId ? e.convertedToBookingId.toString() : null,
-    canCreateBooking: e.status === "SELECTED_FOR_BOOKING" && !e.convertedToBookingId,
+    canCreateBooking: e.status === "BOOKED" && !e.convertedToBookingId,
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
   };
@@ -96,8 +97,21 @@ router.get("/", async (req, res) => {
       search: req.query.search,
       tripDate: req.query.tripDate,
     });
-    if (req.query.eligibleForBooking === "true") {
-      filter.status = "SELECTED_FOR_BOOKING";
+    const eligibleForBooking = req.query.eligibleForBooking === "true";
+    // Create Booking should show every enquiry explicitly selected for booking;
+    // do not silently exclude older selected enquiries because the normal
+    // enquiry list has a default recent-date window.
+    if (!eligibleForBooking || req.query.from || req.query.to) {
+      const range = parseDateRange(req.query.from, req.query.to);
+      if (!range) return res.status(400).json({ success:false, error:"Invalid date range." });
+      filter.createdAt = { $gte: range.start, $lte: range.end };
+    }
+    if (eligibleForBooking) {
+      // Normally only BOOKED enquiries are eligible. A prior version of the
+      // admin UI let staff manually set status to BOOKING without actually
+      // creating a booking — that orphaned the enquiry (no real booking,
+      // but no longer matching this filter either). Rescue those too.
+      filter.status = { $in: ["BOOKED", "BOOKING"] };
       filter.convertedToBookingId = null;
     }
 
@@ -170,7 +184,13 @@ router.patch("/:id/status", async (req, res) => {
     if (!existing) {
       return res.status(404).json({ success: false, error: "Enquiry not found." });
     }
-    if (existing.convertedToBookingId && parsed.data.status !== "CONVERTED") {
+    if (parsed.data.status === "BOOKING") {
+      return res.status(400).json({
+        success: false,
+        error: "\"Booking\" is set automatically when this enquiry is converted into a real booking — use \"Convert to booking\" instead of setting this status directly.",
+      });
+    }
+    if (existing.convertedToBookingId) {
       return res.status(409).json({ success: false, error: "This enquiry is already converted to a booking." });
     }
     const enquiry = await Enquiry.findByIdAndUpdate(

@@ -46,7 +46,7 @@ router.get("/summary", async (req, res) => {
     const billing = invoiceAgg[0] || { totalBilled: 0, totalReceived: 0, totalOutstanding: 0, invoiceCount: 0 };
     const enquiryTotals = toMap(enquiriesByStatus);
     const totalEnquiries = Object.values(enquiryTotals).reduce((a, b) => a + b, 0);
-    const convertedEnquiries = enquiryTotals.CONVERTED || 0;
+    const convertedEnquiries = enquiryTotals.BOOKING || 0;
 
     return res.json({
       success: true,
@@ -211,7 +211,7 @@ async function buildManagementReport(period) {
     from: start.toISOString(),
     to: end.toISOString(),
     enquiries: Object.values(statusMap).reduce((a, b) => a + b, 0),
-    acceptedForBooking: (statusMap.SELECTED_FOR_BOOKING || 0) + (statusMap.CONVERTED || 0),
+    acceptedForBooking: (statusMap.BOOKED || 0) + (statusMap.BOOKING || 0),
     bookingsDone: bookingCount,
     amountReceived: invoice.amountReceived ?? money.amountReceived ?? 0,
     amountPending: invoice.amountPending ?? money.amountPending ?? 0,

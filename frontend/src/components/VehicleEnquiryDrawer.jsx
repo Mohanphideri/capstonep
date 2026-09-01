@@ -65,7 +65,7 @@ export function VehicleEnquiryDrawer({ vehicle, vehicles, open, onClose }) {
           </button>
         </div>
         <div className="enquiry-drawer-body">
-          {open && <VehicleEnquiryForm vehicles={selectedVehicles} />}
+          {open && <VehicleEnquiryForm vehicles={selectedVehicles} clearCartOnSuccess={Boolean(selectedVehicles.length)} />}
         </div>
       </aside>
     </>

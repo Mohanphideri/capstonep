@@ -114,8 +114,16 @@ const env = {
   },
   // Optional folder prefix so uploads from different environments
   // (local/staging/prod) don't collide in the same Cloudinary account.
-  get cloudinaryFolderPrefix() {
-    return process.env.CLOUDINARY_FOLDER_PREFIX || "kuwarji-travels";
+  // Groq (free LLM API, OpenAI-compatible) — powers the real AI trip
+  // planning assistant in /api/trip-planner. Get a free key at
+  // https://console.groq.com/keys — no credit card required.
+  // If unset, that route falls back to the deterministic rule-based
+  // planner so the feature never hard-fails.
+  get groqApiKey() {
+    return process.env.GROQ_API_KEY || null;
+  },
+  get groqModel() {
+    return process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
   },
 };
 

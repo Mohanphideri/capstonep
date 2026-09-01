@@ -20,17 +20,19 @@ export default function TourPackages({ embedded = false }) {
 
   const content = (
     <div className="tour-page">
-      <section className="tour-hero">
-        <div><span className="eyebrow">KUWARJI TRAVELS</span><h1>Tour packages made for memorable journeys.</h1><p>Explore curated group tours with clear itineraries, inclusions and comfortable travel.</p></div>
-        <div className="tour-hero-art">✦</div>
-      </section>
+      {!embedded && (
+        <section className="tour-hero">
+          <div><span className="eyebrow">KUWARJI TRAVELS</span><h1>Tour packages made for memorable journeys.</h1><p>Explore curated group tours with clear itineraries, inclusions and comfortable travel.</p></div>
+          <div className="tour-hero-art">✦</div>
+        </section>
+      )}
       {loading ? <div className="tour-empty">Loading tour packages…</div> : packages.length === 0 ? <div className="tour-empty">No tour packages are available right now.</div> : <div className="tour-grid">
-        {packages.map((pkg) => <article className="tour-card" key={pkg.id}>
+        {packages.map((pkg) => <Link to={embedded ? `/dashboard/tour-packages/${pkg.id}` : `/tour-packages/${pkg.id}`} className="tour-card" key={pkg.id}>
           <div className="tour-card-image" style={pkg.imageUrl ? { backgroundImage: `url(${pkg.imageUrl})` } : undefined}><span>{pkg.durationDays} Days</span></div>
-          <div className="tour-card-body"><div className="tour-card-meta"><span>{pkg.destination}</span>{pkg.featured && <b>Featured</b>}</div><h2>{pkg.title}</h2><p>{pkg.description || "A thoughtfully planned journey by Kuwarji Travels."}</p><div className="tour-card-bottom"><strong>₹{Number(pkg.priceFrom || 0).toLocaleString("en-IN")}</strong><span>from</span><button className="btn btn-primary btn-sm" onClick={() => setSelected(pkg)}>Enquire</button></div></div>
-        </article>)}
+          <div className="tour-card-body"><div className="tour-card-meta"><span>{pkg.destination}</span>{pkg.featured && <b>Featured</b>}</div><h2>{pkg.title}</h2><p>{pkg.description || "A thoughtfully planned journey by Kuwarji Travels."}</p><div className="tour-card-bottom"><span>Ask us for a quote</span><button className="btn btn-primary btn-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelected(pkg); }}>Enquire</button></div></div>
+        </Link>)}
       </div>}
-      {selected && <EnquiryDrawer open onClose={() => setSelected(null)} packageId={selected.id} packageTitle={selected.title} />}
+      {selected && <EnquiryDrawer open onClose={() => setSelected(null)} packageId={selected.id} packageTitle={selected.title} mode="tour" />}
     </div>
   );
   if (embedded) return <ConsumerLayout title="Tour Packages" lead="Explore curated journeys and send an enquiry without leaving your customer portal.">{content}</ConsumerLayout>;

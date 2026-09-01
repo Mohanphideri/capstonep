@@ -1,8 +1,8 @@
+import Icon from "../components/Icon.jsx";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar.jsx";
 import { Footer } from "../components/Footer.jsx";
-import { WhatsAppButton } from "../components/WhatsAppButton.jsx";
 import { VehicleEnquiryDrawer } from "../components/VehicleEnquiryDrawer.jsx";
 import { EnquiryCartBar } from "../components/EnquiryCartBar.jsx";
 import ConsumerLayout from "../components/ConsumerLayout.jsx";
@@ -10,12 +10,11 @@ import { useEnquiryCart } from "../EnquiryCartContext.jsx";
 import { apiFetch } from "../api.js";
 import "./VehicleDetail.css";
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "";
-const BUSINESS_MESSAGE = "Hi, I'm contacting Kuwarji Travels. I need help with a vehicle rental.";
 
 export default function VehicleDetail({ embedded = false }) {
   const { id } = useParams();
   const [vehicle, setVehicle] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [enquiryOpen, setEnquiryOpen] = useState(false);
@@ -54,12 +53,24 @@ export default function VehicleDetail({ embedded = false }) {
         {!loading && vehicle && (
           <div className="vehicle-detail-layout">
             <div className="vehicle-detail-main">
-              <p className="eyebrow">{vehicle.category?.name}</p>
-              <h1 className="vehicle-detail-title">{vehicle.name}</h1>
+              {embedded ? (
+                <p className="eyebrow">{vehicle.category?.name}</p>
+              ) : (
+                <>
+                  <p className="eyebrow">{vehicle.category?.name}</p>
+                  <h1 className="vehicle-detail-title">{vehicle.name}</h1>
+                </>
+              )}
 
               <div className="vehicle-detail-gallery">
                 {vehicle.photos?.length > 0 ? (
-                  vehicle.photos.map((url) => <img key={url} src={url} alt={vehicle.name} />)
+                  <div className="vehicle-detail-gallery-strip">
+                    {vehicle.photos.map((url, i) => (
+                      <button type="button" key={url+i} onClick={() => setLightbox({ photos: vehicle.photos, index: i })} aria-label={`View ${vehicle.name} photo ${i+1}`}>
+                        <img src={url} alt={`${vehicle.name} photo ${i+1}`} />
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="vehicle-detail-gallery-fallback">No photos yet</div>
                 )}
@@ -141,16 +152,6 @@ export default function VehicleDetail({ embedded = false }) {
                   {isSelected(vehicle.id) ? "✓ Added to Enquiry" : "Add to Enquiry"}
                 </button>
               </div>
-              {WHATSAPP_NUMBER && (
-                <a
-                  className="btn btn-outline btn-block vehicle-detail-whatsapp"
-                  href={`https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent(BUSINESS_MESSAGE)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  WhatsApp about this vehicle
-                </a>
-              )}
             </aside>
           </div>
         )}
@@ -160,20 +161,20 @@ export default function VehicleDetail({ embedded = false }) {
   return embedded ? (
     <ConsumerLayout title={vehicle?.name || "Vehicle details"} lead="Review vehicle specifications and send an enquiry without leaving the portal.">
       {content}
-      <WhatsAppButton number={WHATSAPP_NUMBER} message={BUSINESS_MESSAGE} />
       {vehicle && <VehicleEnquiryDrawer vehicle={vehicle} open={enquiryOpen} onClose={() => setEnquiryOpen(false)} />}
       <EnquiryCartBar onEnquire={() => setCartDrawerOpen(true)} />
       <VehicleEnquiryDrawer vehicles={cartVehicles} open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+      {lightbox && <div className="vehicle-lightbox" onClick={() => setLightbox(null)}><div className="vehicle-lightbox-inner" onClick={(e) => e.stopPropagation()}><button type="button" className="vehicle-lightbox-close" onClick={() => setLightbox(null)} aria-label="Close image"><Icon name="close" size={20}/></button><img src={lightbox.photos[lightbox.index]} alt={`${vehicle?.name || "Vehicle"} selected`} /><div className="vehicle-lightbox-controls"><button type="button" onClick={() => setLightbox((x) => ({ ...x, index: (x.index - 1 + x.photos.length) % x.photos.length }))}><Icon name="arrowLeft" size={18}/></button><span>{lightbox.index + 1} / {lightbox.photos.length}</span><button type="button" onClick={() => setLightbox((x) => ({ ...x, index: (x.index + 1) % x.photos.length }))}><Icon name="arrowRight" size={18}/></button></div></div></div>}
     </ConsumerLayout>
   ) : (
     <div className="page">
       <Navbar />
       {content}
       <Footer />
-      <WhatsAppButton number={WHATSAPP_NUMBER} message={BUSINESS_MESSAGE} />
       {vehicle && <VehicleEnquiryDrawer vehicle={vehicle} open={enquiryOpen} onClose={() => setEnquiryOpen(false)} />}
       <EnquiryCartBar onEnquire={() => setCartDrawerOpen(true)} />
       <VehicleEnquiryDrawer vehicles={cartVehicles} open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+      {lightbox && <div className="vehicle-lightbox" onClick={() => setLightbox(null)}><div className="vehicle-lightbox-inner" onClick={(e) => e.stopPropagation()}><button type="button" className="vehicle-lightbox-close" onClick={() => setLightbox(null)} aria-label="Close image"><Icon name="close" size={20}/></button><img src={lightbox.photos[lightbox.index]} alt={`${vehicle?.name || "Vehicle"} selected`} /><div className="vehicle-lightbox-controls"><button type="button" onClick={() => setLightbox((x) => ({ ...x, index: (x.index - 1 + x.photos.length) % x.photos.length }))}><Icon name="arrowLeft" size={18}/></button><span>{lightbox.index + 1} / {lightbox.photos.length}</span><button type="button" onClick={() => setLightbox((x) => ({ ...x, index: (x.index + 1) % x.photos.length }))}><Icon name="arrowRight" size={18}/></button></div></div></div>}
     </div>
   );
 }

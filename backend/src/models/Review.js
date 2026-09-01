@@ -10,6 +10,8 @@ const ReviewSchema = new mongoose.Schema(
     customerName: { type: String, trim: true, default: null },
     customerPhone: { type: String, trim: true, default: null },
     customerEmail: { type: String, trim: true, lowercase: true, default: null },
+    state: { type: String, trim: true, default: null },
+    district: { type: String, trim: true, default: null },
     adminCreated: { type: Boolean, default: false, index: true },
     rating: { type: Number, required: true, min: 1, max: 5 },
     text: { type: String, trim: true, default: "" },

@@ -3,6 +3,7 @@ const { z } = require("zod");
 const mongoose = require("mongoose");
 const { connectToDatabase } = require("../lib/mongodb");
 const { Enquiry } = require("../models/Enquiry");
+const { User } = require("../models/User");
 const { Vehicle } = require("../models/Vehicle");
 const { VehicleCategory } = require("../models/VehicleCategory");
 const { TourPackage } = require("../models/TourPackage");
@@ -63,7 +64,7 @@ const submitBodySchema = z.object({
   passengers: z.coerce.number().int().min(1).max(500).optional().nullable(),
   tripType: z.enum(["ONE_WAY", "ROUND_TRIP", "LOCAL", "OUTSTATION"]).optional().nullable(),
   message: z.string().trim().max(1000).optional().or(z.literal("")).nullable(),
-  accessToken: z.string().min(10, "OTP verification is required before submitting."),
+  accessToken: z.string().min(10).optional().nullable(),
 });
 
 const submitRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
@@ -116,19 +117,25 @@ router.post("/", submitRateLimit, attachSessionIfPresent, async (req, res) => {
     const dateError = validateFutureDates(parsed.data.tripDate, parsed.data.returnDate);
     if (dateError) return res.status(422).json({ success: false, error: dateError });
 
-    // 1. Re-verify the OTP access token server-side. Never trust the
-    // client's word that the number was verified.
-    const { verifiedIdentifier } = await verifyMsg91AccessToken(parsed.data.accessToken);
-    const verifiedPhone = normalizePhone(verifiedIdentifier);
-
-    if (verifiedPhone !== parsed.data.phone) {
-      return res.status(422).json({
-        success: false,
-        error: "The verified mobile number doesn't match the one entered.",
-      });
-    }
-
     await connectToDatabase();
+
+    // Public enquiries require OTP. Authenticated customer enquiries use the
+    // already verified session and never ask for OTP again.
+    let verifiedPhone = parsed.data.phone;
+    if (req.session?.userId) {
+      const user = await User.findById(req.session.userId).select("phone name email").lean();
+      if (!user || normalizePhone(user.phone) !== parsed.data.phone) {
+        return res.status(401).json({ success: false, error: "Your authenticated phone number does not match this enquiry." });
+      }
+      verifiedPhone = normalizePhone(user.phone);
+    } else {
+      if (!parsed.data.accessToken) return res.status(401).json({ success: false, error: "OTP verification is required before submitting." });
+      const { verifiedIdentifier } = await verifyMsg91AccessToken(parsed.data.accessToken);
+      verifiedPhone = normalizePhone(verifiedIdentifier);
+      if (verifiedPhone !== parsed.data.phone) {
+        return res.status(422).json({ success: false, error: "The verified mobile number doesn\'t match the one entered." });
+      }
+    }
 
     // 2. Resolve every selected vehicle. Each one must exist and not be
     // soft-deleted — an enquiry never saves a dangling reference. A

@@ -5,6 +5,8 @@ const { Invoice } = require("../models/Invoice");
 const { generateBookingPdf } = require("../lib/pdf");
 const { getSiteSettings } = require("../lib/siteSettings");
 const { requireAuth } = require("../middleware/requireAuth");
+const { User } = require("../models/User");
+const { normalizePhone } = require("../lib/msg91");
 
 const router = express.Router();
 
@@ -25,6 +27,11 @@ function serializeBooking(b, invoiceSummary) {
     pricing: b.pricing,
     bookingDate: b.bookingDate,
     terms: b.terms,
+    cancelledAt: b.cancelledAt,
+    cancellationReason: b.cancellationReason,
+    refundAmount: Number(b.refundAmount || 0),
+    refundStatus: b.refundStatus || "NOT_APPLICABLE",
+    refundExpectedDays: b.refundExpectedDays || "5–7 business days",
     invoice: invoiceSummary || null,
     createdAt: b.createdAt,
   };
@@ -34,7 +41,9 @@ function serializeBooking(b, invoiceSummary) {
 router.get("/", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
-    const filter = { userId: req.session.userId };
+    const user = await User.findById(req.session.userId).select("phone").lean();
+    const phone = user?.phone ? normalizePhone(user.phone) : null;
+    const filter = phone ? { $or: [{ userId: req.session.userId }, { "customerSnapshot.phone": phone }] } : { userId: req.session.userId };
     const scope = req.query.scope;
     const now = new Date();
     if (scope === "upcoming") {
@@ -68,8 +77,11 @@ router.get("/", requireAuth, async (req, res) => {
 router.get("/:bookingId", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
+    const user = await User.findById(req.session.userId).select("phone").lean();
+    const phone = user?.phone ? normalizePhone(user.phone) : null;
     const booking = await Booking.findOne({ bookingId: req.params.bookingId }).lean();
-    if (!booking || booking.userId.toString() !== req.session.userId) {
+    const ownsBooking = booking && (booking.userId?.toString() === req.session.userId || (phone && normalizePhone(booking.customerSnapshot?.phone || "") === phone));
+    if (!booking || !ownsBooking) {
       return res.status(404).json({ success: false, error: "Booking not found." });
     }
     const invoice = await Invoice.findOne({ bookingId: booking._id })
@@ -82,12 +94,56 @@ router.get("/:bookingId", requireAuth, async (req, res) => {
   }
 });
 
+
+// --- Authenticated: customer cancellation ---
+router.post("/:bookingId/cancel", requireAuth, async (req, res) => {
+  try {
+    if (String(req.body?.confirmation || "").trim().toLowerCase() !== "cancel") {
+      return res.status(400).json({ success: false, error: 'Type "cancel" to confirm cancellation.' });
+    }
+    await connectToDatabase();
+    const user = await User.findById(req.session.userId).select("phone").lean();
+    const phone = user?.phone ? normalizePhone(user.phone) : null;
+    const booking = await Booking.findOne({ bookingId: req.params.bookingId });
+    const ownsBooking = booking && (booking.userId?.toString() === req.session.userId || (phone && normalizePhone(booking.customerSnapshot?.phone || "") === phone));
+    if (!booking || !ownsBooking) return res.status(404).json({ success: false, error: "Booking not found." });
+    // Cancellation is idempotent: if the first request reached the server but
+    // its response was lost, a repeated request returns the already-cancelled
+    // booking instead of showing a misleading failure.
+    if (booking.status === "CANCELLED") {
+      const invoice = await Invoice.findOne({ bookingId: booking._id }).select("invoiceNumber bookingId total balance status").lean();
+      return res.json({ success: true, booking: serializeBooking(booking.toObject(), invoice), alreadyCancelled: true });
+    }
+    if (!["DRAFT", "CONFIRMED"].includes(booking.status)) {
+      return res.status(422).json({ success: false, error: "This booking can no longer be cancelled online." });
+    }
+    booking.status = "CANCELLED";
+    booking.cancelledAt = new Date();
+    booking.cancellationReason = "Cancelled by customer";
+    booking.refundAmount = Number(booking.pricing?.amountReceived || 0);
+    booking.refundStatus = booking.refundAmount > 0 ? "REFUND_PENDING" : "NOT_APPLICABLE";
+    booking.refundExpectedDays = "5–7 business days";
+    await booking.save();
+    const { Enquiry } = require("../models/Enquiry");
+    await Enquiry.updateOne({ convertedToBookingId: booking._id }, { $set: { status: "CANCELLED" } });
+    createNotification({ userId: booking.userId || req.session.userId, type: "BOOKING_CANCELLED", channel: "IN_APP", title: "Booking cancelled", message: booking.refundAmount > 0 ? `Your booking ${booking.bookingId} has been cancelled. Your refundable amount will be processed within 5–7 business days.` : `Your booking ${booking.bookingId} has been cancelled.`, bookingId: booking._id });
+    const invoice = await Invoice.findOne({ bookingId: booking._id }).select("invoiceNumber bookingId total balance status").lean();
+    return res.json({ success: true, booking: serializeBooking(booking.toObject(), invoice) });
+  } catch (err) {
+    console.error("customer booking cancel error", err);
+    return res.status(500).json({ success: false, error: "Failed to cancel booking." });
+  }
+});
+
 // --- Authenticated: download booking PDF (ownership enforced) ---
 router.get("/:bookingId/pdf", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
+    const user = await User.findById(req.session.userId).select("phone").lean();
+    const phone = user?.phone ? normalizePhone(user.phone) : null;
     const booking = await Booking.findOne({ bookingId: req.params.bookingId }).lean();
-    if (!booking || booking.userId.toString() !== req.session.userId) {
+    const ownsBooking = booking && (booking.userId?.toString() === req.session.userId || (phone && normalizePhone(booking.customerSnapshot?.phone || "") === phone));
+    if (!booking || !ownsBooking) {
       return res.status(404).json({ success: false, error: "Booking not found." });
     }
     const pdfSettings = await getSiteSettings();

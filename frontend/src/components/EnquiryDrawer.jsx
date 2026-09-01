@@ -10,15 +10,6 @@ import "./EnquiryDrawer.css";
 export function EnquiryTab({ onClick }) {
   return (
     <button type="button" className="enquiry-tab" onClick={onClick}>
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path
-          d="M1 2.5h14M1 2.5l6.2 5.1a1.4 1.4 0 001.6 0L15 2.5M1 2.5v9.4a1 1 0 001 1h12a1 1 0 001-1V2.5"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
       <span>Enquiry</span>
     </button>
   );
@@ -29,7 +20,7 @@ export function EnquiryTab({ onClick }) {
  * is never rendered inline on the page — it only mounts here, and only
  * becomes visible once `open` is true.
  */
-export function EnquiryDrawer({ open, onClose, packageId = null, packageTitle = "", initialTrip = null }) {
+export function EnquiryDrawer({ open, onClose, packageId = null, packageTitle = "", initialTrip = null, mode = "vehicle" }) {
   useEffect(() => {
     if (!open) return undefined;
 
@@ -82,7 +73,7 @@ export function EnquiryDrawer({ open, onClose, packageId = null, packageTitle = 
           </button>
         </div>
         <div className="enquiry-drawer-body">
-          <EnquiryForm packageId={packageId} packageTitle={packageTitle} initialTrip={initialTrip} />
+          <EnquiryForm packageId={packageId} packageTitle={packageTitle} initialTrip={initialTrip} mode={mode} />
         </div>
       </aside>
     </>

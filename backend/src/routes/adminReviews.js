@@ -17,6 +17,8 @@ function serializeReview(r) {
     phone: r.customerPhone || r.userId?.phone || "",
     email: r.customerEmail || r.userId?.email || "",
     vehicle: r.vehicleId?.name || r.bookingId?.vehicles?.[0]?.vehicle?.name || "—",
+    state: r.state || "",
+    district: r.district || "",
     rating: r.rating,
     text: r.text || "",
     status: r.status,
@@ -24,6 +26,14 @@ function serializeReview(r) {
     adminCreated: Boolean(r.adminCreated),
     createdAt: r.createdAt,
   };
+}
+
+async function refreshVehicleRating(vehicleId) {
+  if (!vehicleId) return;
+  const rows = await Review.find({ vehicleId, status: "APPROVED" }).select("rating").lean();
+  const count = rows.length;
+  const avg = count ? Number((rows.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count).toFixed(1)) : 0;
+  await Vehicle.findByIdAndUpdate(vehicleId, { ratingAvg: avg, ratingCount: count });
 }
 
 router.get("/", async (req, res) => {
@@ -49,6 +59,8 @@ const createSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
   text: z.string().trim().min(2).max(2000),
   vehicleId: z.string().refine((v) => mongoose.Types.ObjectId.isValid(v), "Invalid vehicle.").optional().nullable().or(z.literal("")),
+  state: z.string().trim().max(80).optional().or(z.literal("")),
+  district: z.string().trim().max(100).optional().or(z.literal("")),
   status: z.enum(["PENDING", "APPROVED"]).default("APPROVED"),
   featured: z.boolean().default(true),
 });
@@ -73,6 +85,8 @@ router.post("/admin-created", async (req, res) => {
       customerName: parsed.data.customerName,
       customerPhone: parsed.data.customerPhone || null,
       customerEmail: parsed.data.customerEmail || null,
+      state: parsed.data.state || null,
+      district: parsed.data.district || null,
       adminCreated: true,
       rating: parsed.data.rating,
       text: parsed.data.text,
@@ -80,6 +94,7 @@ router.post("/admin-created", async (req, res) => {
       featured: parsed.data.status === "APPROVED" ? parsed.data.featured : false,
     });
 
+    if (review.status === "APPROVED") await refreshVehicleRating(vehicleId);
     return res.status(201).json({
       success: true,
       review: serializeReview({
@@ -110,8 +125,11 @@ router.patch("/:id", async (req, res) => {
       return res.status(422).json({ success: false, error: "Approve the review before featuring it." });
     }
     if (update.status === "HIDDEN" || update.status === "PENDING") update.featured = false;
+    const oldVehicleId = review.vehicleId;
     Object.assign(review, update);
     await review.save();
+    await refreshVehicleRating(oldVehicleId);
+    if (review.vehicleId && String(review.vehicleId) !== String(oldVehicleId || "")) await refreshVehicleRating(review.vehicleId);
 
     return res.json({ success: true, review: { id: review._id.toString(), status: review.status, featured: review.featured } });
   } catch (err) {

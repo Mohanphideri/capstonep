@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api.js";
+import { useAuth } from "../AuthContext.jsx";
 import { useMsg91Widget, otpErrorMessage, useCooldown } from "../hooks/useMsg91Widget.js";
 import "./OtpLogin.css";
 import "./EnquiryForm.css";
@@ -21,16 +22,20 @@ const VEHICLE_OPTIONS = [
   "Not sure yet",
 ];
 
-export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip = null }) {
+export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip = null, mode = "vehicle" }) {
+  const { user } = useAuth();
+  const isTour = mode === "tour" || Boolean(packageId);
   const { configured, widgetReady } = useMsg91Widget();
   const [cooldown, startCooldown] = useCooldown(RESEND_COOLDOWN_SECONDS);
 
   // Form fields
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState((user?.phone || "").replace(/\D/g, ""));
+  const [email, setEmail] = useState(user?.email || "");
   const [vehicleType, setVehicleType] = useState(packageTitle ? `Tour Package: ${packageTitle}` : (initialTrip?.vehicleType || ""));
   const [tripDate, setTripDate] = useState(initialTrip?.tripDate || "");
+  const [returnDate, setReturnDate] = useState(initialTrip?.returnDate || "");
+  const [passengers, setPassengers] = useState(initialTrip?.passengers || "");
   const [message, setMessage] = useState(initialTrip?.message || "");
 
   // Captcha
@@ -68,8 +73,16 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
   }, []);
 
   useEffect(() => {
-    if (configured) loadCaptcha();
-  }, [configured, loadCaptcha]);
+    if (user) {
+      setName(user.name || "");
+      setPhone((user.phone || "").replace(/\D/g, ""));
+      setEmail(user.email || "");
+      setOtpStage("verified");
+      setVerifiedPhone((user.phone || "").replace(/\D/g, ""));
+    } else if (configured) {
+      loadCaptcha();
+    }
+  }, [user, configured, loadCaptcha]);
 
   // Editing the phone number after verifying invalidates the previous
   // verification — the submitted phone must always be the verified one.
@@ -210,7 +223,7 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
       setError("Enter your name.");
       return;
     }
-    if (otpStage !== "verified" || !accessToken || verifiedPhone !== phone) {
+    if (!user && (otpStage !== "verified" || !accessToken || verifiedPhone !== phone)) {
       setError("Verify your mobile number with the OTP before submitting.");
       return;
     }
@@ -226,8 +239,10 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
           vehicleType: vehicleType || undefined,
           packageId: packageId || undefined,
           tripDate: tripDate || undefined,
+          returnDate: returnDate || undefined,
+          passengers: passengers ? Number(passengers) : undefined,
           message: message.trim() || undefined,
-          accessToken,
+          accessToken: user ? undefined : accessToken,
         }),
       });
 
@@ -245,7 +260,7 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
     }
   }
 
-  if (!configured) {
+  if (!user && !configured) {
     return (
       <div className="ticket enquiry-card">
         <p className="enquiry-config-warning">
@@ -303,61 +318,46 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
             onChange={(e) => handlePhoneChange(e.target.value)}
             placeholder="98765 43210"
             className="otp-phone-input"
-            disabled={otpStage === "sending" || otpStage === "verifying"}
+            disabled={Boolean(user) || otpStage === "sending" || otpStage === "verifying"}
           />
           {phoneVerified && <span className="enquiry-verified-badge">Verified</span>}
         </div>
       </div>
 
-      <div className="enquiry-grid-2">
-        <div className="enquiry-field">
-          <label className="otp-label-text" htmlFor="enq-email">
-            Email <span className="enquiry-optional">(optional)</span>
-          </label>
-          <input
-            id="enq-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="enquiry-input"
-            autoComplete="email"
-          />
-        </div>
-
-        <div className="enquiry-field">
-          <label className="otp-label-text" htmlFor="enq-vehicle">
-            Vehicle type <span className="enquiry-optional">(optional)</span>
-          </label>
-          <select
-            id="enq-vehicle"
-            value={vehicleType}
-            onChange={(e) => setVehicleType(e.target.value)}
-            className="enquiry-input"
-          >
-            <option value="">Select a category</option>
-            {VEHICLE_OPTIONS.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="enquiry-field">
+        <label className="otp-label-text" htmlFor="enq-email">
+          Email <span className="enquiry-optional">(optional)</span>
+        </label>
+        <input id="enq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="enquiry-input" autoComplete="email" />
       </div>
+
+      {isTour ? (
+        <>
+          <div className="enquiry-tour-note">
+            <strong>{packageTitle || "Tour enquiry"}</strong>
+            <span>Plan this tour with your preferred dates and group size.</span>
+          </div>
+          <div className="enquiry-field">
+            <label className="otp-label-text" htmlFor="enq-passengers">Travellers</label>
+            <input id="enq-passengers" type="number" min="1" max="500" className="enquiry-input" value={passengers} onChange={(e)=>setPassengers(e.target.value)} placeholder="Number of travellers" />
+          </div>
+        </>
+      ) : (
+        <div className="enquiry-field">
+          <label className="otp-label-text" htmlFor="enq-vehicle">Vehicle type <span className="enquiry-optional">(optional)</span></label>
+          <select id="enq-vehicle" value={vehicleType} onChange={(e) => setVehicleType(e.target.value)} className="enquiry-input"><option value="">Select a category</option>{VEHICLE_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}</select>
+        </div>
+      )}
 
       <div className="enquiry-field">
-        <label className="otp-label-text" htmlFor="enq-date">
-          Travel date <span className="enquiry-optional">(optional)</span>
-        </label>
-        <input
-          id="enq-date"
-          type="date"
-          min={TODAY}
-          value={tripDate}
-          onChange={(e) => setTripDate(e.target.value)}
-          className="enquiry-input"
-        />
+        <label className="otp-label-text" htmlFor="enq-date">Travel date <span className="enquiry-optional">(optional)</span></label>
+        <input id="enq-date" type="date" min={TODAY} value={tripDate} onChange={(e) => setTripDate(e.target.value)} className="enquiry-input" />
       </div>
+
+      {isTour && <div className="enquiry-field">
+        <label className="otp-label-text" htmlFor="enq-return">Return date <span className="enquiry-optional">(optional)</span></label>
+        <input id="enq-return" type="date" min={tripDate || TODAY} value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="enquiry-input" />
+      </div>}
 
       <div className="enquiry-field">
         <label className="otp-label-text" htmlFor="enq-message">
@@ -367,18 +367,18 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
           id="enq-message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="From, to, number of passengers, dates..."
+          placeholder={isTour ? "Special requirements, pickup preference, hotel needs, etc." : "From, to, number of passengers, dates..."}
           className="enquiry-input enquiry-textarea"
           rows={3}
         />
       </div>
 
-      {/* OTP verification gate */}
-      <div className="enquiry-otp-block">
+      {/* OTP verification gate for guests only */}
+      {!user && <div className="enquiry-otp-block">
         {otpStage !== "sent" && otpStage !== "verifying" && !phoneVerified && (
           <>
             <div className="otp-captcha-header">
-              <span className="otp-label-text">Verification code</span>
+              <span className="otp-label-text">Enter the security code</span>
               <button
                 type="button"
                 onClick={loadCaptcha}
@@ -402,7 +402,7 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
                 type="text"
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
-                placeholder="Type the code"
+                placeholder="Enter code shown above"
                 className="otp-captcha-input"
                 autoComplete="off"
               />
@@ -454,15 +454,15 @@ export function EnquiryForm({ packageId = null, packageTitle = "", initialTrip =
             ✓ Mobile number verified — you can submit your enquiry now.
           </p>
         )}
-      </div>
+      </div>}
 
       {error && <p className="otp-error">{error}</p>}
 
       <button
         type="submit"
         className="btn btn-primary btn-block"
-        disabled={!phoneVerified || submitting}
-        title={!phoneVerified ? "Verify your mobile number with OTP first" : undefined}
+        disabled={(!user && !phoneVerified) || submitting}
+        title={!user && !phoneVerified ? "Verify your mobile number with OTP first" : undefined}
       >
         {submitting ? "Sending…" : "Submit enquiry"}
       </button>

@@ -5,6 +5,8 @@ const { Review } = require("../models/Review");
 const { Booking } = require("../models/Booking");
 const { Vehicle } = require("../models/Vehicle");
 const { requireAuth } = require("../middleware/requireAuth");
+const { User } = require("../models/User");
+const { normalizePhone } = require("../lib/msg91");
 
 const router = express.Router();
 
@@ -12,6 +14,9 @@ const createSchema = z.object({
   bookingId: z.string().min(1),
   rating: z.coerce.number().int().min(1).max(5),
   text: z.string().trim().max(1000).optional().default(""),
+  name: z.string().trim().min(2).max(120).optional(),
+  state: z.string().trim().min(2).max(80).optional(),
+  district: z.string().trim().min(2).max(100).optional(),
 });
 
 // --- Authenticated: submit a review (only for own COMPLETED bookings) ---
@@ -27,8 +32,11 @@ router.post("/", requireAuth, async (req, res) => {
 
     await connectToDatabase();
 
+    const user = await User.findById(req.session.userId).select("phone name email").lean();
+    const userPhone = user?.phone ? normalizePhone(user.phone) : null;
     const booking = await Booking.findOne({ bookingId: parsed.data.bookingId }).lean();
-    if (!booking || booking.userId.toString() !== req.session.userId) {
+    const ownsBooking = booking && (booking.userId?.toString() === req.session.userId || (userPhone && normalizePhone(booking.customerSnapshot?.phone || "") === userPhone));
+    if (!booking || !ownsBooking) {
       return res.status(404).json({ success: false, error: "Booking not found." });
     }
     if (booking.status !== "COMPLETED") {
@@ -52,8 +60,14 @@ router.post("/", requireAuth, async (req, res) => {
       bookingId: booking._id,
       userId: req.session.userId,
       vehicleId: reviewVehicleId,
+      customerName: parsed.data.name || user?.name || null,
+      customerPhone: userPhone,
+      customerEmail: user?.email || null,
       rating: parsed.data.rating,
       text: parsed.data.text,
+      customerName: parsed.data.name || null,
+      state: parsed.data.state || null,
+      district: parsed.data.district || null,
       status: "PENDING",
     });
 
@@ -78,8 +92,11 @@ router.post("/", requireAuth, async (req, res) => {
 router.get("/mine", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
-    const reviews = await Review.find({ userId: req.session.userId }).select("bookingId rating text status featured createdAt").lean();
-    return res.json({ success: true, reviews: reviews.map((r) => ({ bookingId: r.bookingId.toString(), rating: r.rating, text: r.text, status: r.status, featured: r.featured, createdAt: r.createdAt })) });
+    const user = await User.findById(req.session.userId).select("phone").lean();
+    const ownership = [{ userId: req.session.userId }];
+    if (user?.phone) ownership.push({ customerPhone: normalizePhone(user.phone) });
+    const reviews = await Review.find({ $or: ownership }).select("bookingId rating text status featured createdAt customerName state district").lean();
+    return res.json({ success: true, reviews: reviews.map((r) => ({ bookingId: r.bookingId?.toString(), rating: r.rating, text: r.text, status: r.status, featured: r.featured, createdAt: r.createdAt, state: r.state, district: r.district })) });
   } catch (err) {
     console.error("my reviews error", err);
     return res.status(500).json({ success: false, error: "Failed to load your reviews." });
@@ -102,6 +119,8 @@ router.get("/featured", async (req, res) => {
         customerName: r.customerName || r.userId?.name || "Kuwarji customer",
         rating: r.rating,
         text: r.text || "",
+        state: r.state || "",
+        district: r.district || "",
       })),
     });
   } catch (err) {

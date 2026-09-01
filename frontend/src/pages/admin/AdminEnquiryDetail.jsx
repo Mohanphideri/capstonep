@@ -1,19 +1,19 @@
+import Icon from "../../components/Icon.jsx";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../api.js";
 import { AdminLayout } from "../../components/AdminLayout.jsx";
 
-const STATUS_OPTIONS = ["NEW", "IN_REVIEW", "CONTACTED", "QUOTED", "SELECTED_FOR_BOOKING", "CONVERTED", "CLOSED", "CANCELLED"];
+const STATUS_OPTIONS = ["NEW", "BOOKED", "CLOSED", "CANCELLED"];
 
-// Main forward flow shown as a stepper. CLOSED/CANCELLED are terminal
-// side-states, not steps on this path, so they're handled separately.
+// Main forward flow shown as a stepper. "Booking" is a real step in the
+// lifecycle, but it's only ever reached via actual conversion (the
+// "Convert to booking" button below) — it's shown as the end state once
+// reached, never offered as something to click into directly, since doing
+// so would mark the enquiry booked without an actual booking existing.
 const FLOW_STEPS = [
   { value: "NEW", label: "New" },
-  { value: "IN_REVIEW", label: "Under review" },
-  { value: "CONTACTED", label: "Contacted" },
-  { value: "QUOTED", label: "Quoted" },
-  { value: "SELECTED_FOR_BOOKING", label: "Selected for booking" },
-  { value: "CONVERTED", label: "Converted" },
+  { value: "BOOKED", label: "Booked" },
 ];
 
 function formatDate(value) {
@@ -129,6 +129,7 @@ export default function AdminEnquiryDetail() {
   }
 
   const isTerminalOffPath = enquiry.status === "CLOSED" || enquiry.status === "CANCELLED";
+  const isConverted = enquiry.status === "BOOKING" && Boolean(enquiry.convertedToBookingId);
   const currentStepIndex = FLOW_STEPS.findIndex((s) => s.value === enquiry.status);
 
   return (
@@ -155,7 +156,7 @@ export default function AdminEnquiryDetail() {
             <p className="eyebrow">Journey</p>
             <div className="admin-route-line">
               <strong>{enquiry.pickupLocation || "—"}</strong>
-              <span className="admin-route-arrow">→</span>
+              <span className="admin-route-arrow"><Icon name="arrowRight" size={16}/></span>
               <strong>{enquiry.destination || "—"}</strong>
             </div>
             <Field label="Travel date" value={enquiry.tripDate} />
@@ -200,8 +201,8 @@ export default function AdminEnquiryDetail() {
 
             <ol className="admin-stepper">
               {FLOW_STEPS.map((step, i) => {
-                const done = !isTerminalOffPath && i < currentStepIndex;
-                const current = !isTerminalOffPath && i === currentStepIndex;
+                const done = isConverted || (!isTerminalOffPath && i < currentStepIndex);
+                const current = !isConverted && !isTerminalOffPath && i === currentStepIndex;
                 return (
                   <li
                     key={step.value}
@@ -209,7 +210,7 @@ export default function AdminEnquiryDetail() {
                   >
                     <button
                       type="button"
-                      disabled={statusSaving}
+                      disabled={statusSaving || isConverted}
                       onClick={() => handleStatusChange(step.value)}
                     >
                       <span className="admin-stepper-dot" />
@@ -220,27 +221,34 @@ export default function AdminEnquiryDetail() {
               })}
             </ol>
 
+            {isConverted && (
+              <p className="admin-subtext" style={{ marginTop: "0.5rem" }}>
+                Converted to a real booking — status is locked.
+              </p>
+            )}
             {isTerminalOffPath && (
               <p className="admin-subtext" style={{ marginTop: "0.5rem" }}>
                 Marked <strong>{enquiry.status.replace(/_/g, " ")}</strong> — outside the normal flow.
               </p>
             )}
 
-            <label className="admin-form-field" style={{ marginTop: "1rem" }}>
-              <span className="admin-field-label">Set status manually</span>
-              <select
-                className="admin-select"
-                value={enquiry.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                disabled={statusSaving}
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace(/_/g, " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {!isConverted && (
+              <label className="admin-form-field" style={{ marginTop: "1rem" }}>
+                <span className="admin-field-label">Set status manually</span>
+                <select
+                  className="admin-select"
+                  value={enquiry.status}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  disabled={statusSaving}
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             {statusError && <p className="otp-error">{statusError}</p>}
           </div>
 

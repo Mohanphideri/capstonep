@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../api.js";
 import { AdminLayout } from "../../components/AdminLayout.jsx";
@@ -6,11 +7,8 @@ import { AdminLayout } from "../../components/AdminLayout.jsx";
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
   { value: "NEW", label: "New" },
-  { value: "IN_REVIEW", label: "In review" },
-  { value: "CONTACTED", label: "Contacted" },
-  { value: "QUOTED", label: "Quoted" },
-  { value: "SELECTED_FOR_BOOKING", label: "Selected for booking" },
-  { value: "CONVERTED", label: "Booked" },
+  { value: "BOOKED", label: "Booked" },
+  { value: "BOOKING", label: "Booking" },
   { value: "CLOSED", label: "Closed" },
   { value: "CANCELLED", label: "Cancelled" },
 ];
@@ -30,8 +28,12 @@ export default function AdminEnquiries() {
   const [error, setError] = useState(null);
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const from = searchParams.get("from") || "";
+  const to = searchParams.get("to") || "";
+  const [status, setStatus] = useState("NEW");
   const [tripDate, setTripDate] = useState("");
+  const [searchMore, setSearchMore] = useState(() => Boolean(searchParams.get("from") || searchParams.get("to") || searchParams.get("tripDate")));
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 20;
@@ -43,6 +45,8 @@ export default function AdminEnquiries() {
     if (search.trim()) params.set("search", search.trim());
     if (status) params.set("status", status);
     if (tripDate) params.set("tripDate", tripDate);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
 
     const { ok, data } = await apiFetch(`/api/admin/enquiries?${params.toString()}`);
     if (ok && data?.success) {
@@ -52,7 +56,7 @@ export default function AdminEnquiries() {
       setError(data?.error || "Failed to load enquiries.");
     }
     setLoading(false);
-  }, [search, status, tripDate, page]);
+  }, [search, status, tripDate, page, from, to]);
 
   useEffect(() => {
     load();
@@ -66,7 +70,7 @@ export default function AdminEnquiries() {
       body: JSON.stringify({ status: nextStatus }),
     });
     if (ok && data?.success) {
-      setEnquiries((items) => items.map((item) => item.id === id ? { ...item, status: nextStatus, canCreateBooking: nextStatus === "SELECTED_FOR_BOOKING" } : item));
+      setEnquiries((items) => items.map((item) => item.id === id ? { ...item, status: nextStatus, canCreateBooking: nextStatus === "BOOKED" } : item));
     } else {
       setError(data?.error || "Failed to update enquiry status.");
     }
@@ -77,6 +81,10 @@ export default function AdminEnquiries() {
       <p className="admin-subtext" style={{ marginBottom: "1rem" }}>
         {total} enquir{total === 1 ? "y" : "ies"}
       </p>
+
+      <div className="admin-enquiry-tabs" style={{display:"flex",gap:".5rem",flexWrap:"wrap",marginBottom:"1rem"}}>
+        {[{value:"NEW",label:"New"},{value:"BOOKED",label:"Booked"},{value:"CANCELLED",label:"Cancelled"},{value:"",label:"All"}].map(t=><button key={t.value||"all"} type="button" className={`admin-inline-btn${status===t.value?" is-active":""}`} onClick={()=>{setPage(1);setStatus(t.value);}}>{t.label}</button>)}
+      </div>
 
       <div className="admin-toolbar">
         <input
@@ -103,16 +111,25 @@ export default function AdminEnquiries() {
             </option>
           ))}
         </select>
-        <input
-          type="date"
-          className="admin-input"
-          value={tripDate}
-          onChange={(e) => {
-            setPage(1);
-            setTripDate(e.target.value);
-          }}
-          title="Filter by travel date"
-        />
+        <button type="button" className="admin-inline-btn" onClick={() => setSearchMore((value) => !value)}>
+          {searchMore ? "Hide Search More" : "Search More"}
+        </button>
+        {searchMore && (
+          <>
+            <label className="admin-date-filter">
+              <span>Select Date</span>
+              <input type="date" className="admin-input" value={tripDate} onChange={(e) => { setPage(1); setTripDate(e.target.value); }} />
+            </label>
+            <label className="admin-date-filter">
+              <span>From date</span>
+              <input className="admin-input" type="date" value={from} onChange={(e)=>{const n=new URLSearchParams(searchParams); if(e.target.value)n.set("from",e.target.value); else n.delete("from"); setSearchParams(n); setPage(1);}} />
+            </label>
+            <label className="admin-date-filter">
+              <span>To date</span>
+              <input className="admin-input" type="date" value={to} onChange={(e)=>{const n=new URLSearchParams(searchParams); if(e.target.value)n.set("to",e.target.value); else n.delete("to"); setSearchParams(n); setPage(1);}} />
+            </label>
+          </>
+        )}
       </div>
 
       <div className="ticket admin-table-card">

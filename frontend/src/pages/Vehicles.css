@@ -60,6 +60,7 @@
 }
 
 .vehicle-card-link {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   text-decoration: none;
@@ -157,3 +158,12 @@
 .vehicles-dashboard-content { padding-top:38px; }
 .vehicles-dashboard-content .vehicles-page { padding:0; }
 @media (max-width:900px){ .vehicle-dashboard-shell .consumer-sidebar{display:none;} .vehicle-dashboard-shell .consumer-content{width:100%;margin-left:0;padding:24px 18px 40px;} }
+
+.vehicle-photo-strip{display:flex;gap:6px;overflow-x:auto;padding:7px 10px 0}.vehicle-photo-strip button{border:0;background:transparent;padding:0;flex:0 0 64px;height:48px;cursor:pointer}.vehicle-photo-strip img{width:100%;height:100%;object-fit:cover;border-radius:7px}.vehicle-lightbox{position:fixed;inset:0;background:rgba(15,25,40,.72);display:grid;place-items:center;padding:20px;z-index:120}.vehicle-lightbox-inner{position:relative;width:min(900px,96vw);max-height:92vh;background:#fff;border-radius:16px;padding:16px;display:grid;gap:12px;justify-items:center}.vehicle-lightbox-inner>img{max-width:100%;max-height:76vh;object-fit:contain;border-radius:10px}.vehicle-lightbox-close{position:absolute;right:10px;top:8px;border:0;background:#fff;border-radius:50%;width:36px;height:36px;font-size:24px;cursor:pointer}.vehicle-lightbox-controls{display:flex;gap:18px;align-items:center}.vehicle-lightbox-controls button{border:1px solid #dbe2ea;background:#fff;border-radius:8px;padding:7px 13px;cursor:pointer}
+
+.vehicle-card-enquiry-actions{margin-top:auto;min-height:52px;display:flex;align-items:flex-end;padding:0 1rem 1rem}
+.vehicle-card-enquiry-actions .btn{height:42px}
+.vehicle-photo-strip{scrollbar-width:thin;overscroll-behavior-inline:contain}
+.vehicle-photo-strip button:focus-visible{outline:2px solid var(--color-marigold);outline-offset:2px}
+.vehicle-lightbox{backdrop-filter:blur(5px)}
+.vehicle-lightbox-inner{padding:20px}

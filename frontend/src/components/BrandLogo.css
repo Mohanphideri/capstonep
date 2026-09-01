@@ -1,7 +1,7 @@
 .brand-logo {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   text-decoration: none;
@@ -18,8 +18,15 @@
 }
 
 .brand-logo-image-full {
-  width: 188px;
-  max-width: 100%;
+  width: auto;
+  height: 46px;
+  max-width: 220px;
+}
+
+.brand-logo-image-full.is-custom {
+  width: auto;
+  height: 46px;
+  max-width: 220px;
 }
 
 .brand-logo-image-compact {
@@ -28,12 +35,13 @@
 }
 
 .brand-logo-image-icon {
-  width: 42px;
-  height: 34px;
+  width: auto;
+  height: 40px;
 }
 
 .brand-logo-tagline {
-  margin-top: 2px;
+  margin-left: 10px;
+  margin-top: 0;
   padding-left: 3px;
   color: #7a8398;
   font-family: var(--font-mono);
@@ -44,25 +52,41 @@
 }
 
 @media (max-width: 640px) {
-  .brand-logo-image-full { width: 148px; }
-  .brand-logo-image-compact { width: 132px; }
+  .brand-logo-image-full { height: 38px; }
 }
 
 .brand-logo-image-sidebar-icon {
   display: none;
-  width: 42px;
-  height: 34px;
+  width: auto;
+  height: 40px;
 }
 
 .admin-shell.is-collapsed .admin-brand .brand-logo-image-full { display: none; }
 .admin-shell.is-collapsed .admin-brand .brand-logo-image-sidebar-icon { display: block; }
-.admin-shell.is-collapsed .admin-brand { width: 42px; justify-content: center; }
-.consumer-brand .brand-logo-image-full { width: 186px; }
-.footer-brand .brand-logo-image-full { width: 204px; }
-.login-brand .brand-logo-image-full { width: 192px; }
+.admin-shell.is-collapsed .admin-brand { width: 46px; justify-content: center; overflow: hidden; }
+.consumer-brand .brand-logo-image-full { height: 38px; max-width:200px; }
+.footer-brand .brand-logo-image-full { height: 42px; max-width:210px; }
+.login-brand .brand-logo-image-full { height: 48px; max-width:215px; }
 
 @media (max-width: 900px) {
   .admin-shell.is-collapsed .admin-brand .brand-logo-image-full { display: block; }
   .admin-shell.is-collapsed .admin-brand .brand-logo-image-sidebar-icon { display: none; }
   .admin-shell.is-collapsed .admin-brand { width: auto; }
 }
+
+.admin-shell.is-collapsed .admin-brand .brand-logo-name { display:none; }
+
+.portal-avatar-initial{font-size:15px;font-weight:800;letter-spacing:.01em;color:#173b78;}
+.enquiry-tour-note{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid #dce6f3;border-radius:12px;background:#f7faff;color:#53647c;margin-bottom:12px}.enquiry-tour-note strong{color:#18345f;font-size:.9rem}.enquiry-tour-note span{font-size:.76rem;line-height:1.45}
+
+/* Global logo sizing: compact, aligned and consistent across the product. */
+.navbar-brand .brand-logo-image-full{height:40px;max-width:190px}
+.admin-brand .brand-logo-image-full{height:40px;max-width:190px}
+.consumer-brand .brand-logo-image-full{height:36px;max-width:190px}
+.footer-brand .brand-logo-image-full{height:38px;max-width:195px}
+.login-brand .brand-logo-image-full{height:42px;max-width:195px}
+@media(max-width:767px){.navbar-brand{width:158px;min-width:158px}.navbar-brand .brand-logo-image-full{height:34px;max-width:165px}}
+@media(max-width:420px){.navbar-brand{width:140px;min-width:140px}.navbar-brand .brand-logo-image-full{height:31px;max-width:150px}}
+
+/* Final compact brand sizing */
+.navbar-brand .brand-logo-image-full{height:36px;max-width:178px}.admin-brand .brand-logo-image-full{height:36px;max-width:178px}.consumer-brand .brand-logo-image-full{height:34px;max-width:178px}.footer-brand .brand-logo-image-full{height:36px;max-width:185px}.login-brand .brand-logo-image-full{height:38px;max-width:185px}

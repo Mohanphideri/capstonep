@@ -19,6 +19,8 @@ export default function AdminBookings() {
 
   const status = searchParams.get("status") || "";
   const search = searchParams.get("search") || "";
+  const from = searchParams.get("from") || "";
+  const to = searchParams.get("to") || "";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -26,6 +28,8 @@ export default function AdminBookings() {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (search) params.set("search", search);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
     const { ok, data } = await apiFetch(`/api/admin/bookings?${params.toString()}`);
     if (ok && data?.success) {
       setBookings(data.bookings);
@@ -34,11 +38,9 @@ export default function AdminBookings() {
       setError(data?.error || "Failed to load bookings.");
     }
     setLoading(false);
-  }, [status, search]);
+  }, [status, search, from, to]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { if(!from&&!to){const e=new Date(),st=new Date();st.setDate(st.getDate()-6);const f=d=>d.toISOString().slice(0,10);const n=new URLSearchParams(searchParams);n.set("from",f(st));n.set("to",f(e));setSearchParams(n,{replace:true});return;} load(); }, [load,from,to]);
 
   function updateParam(key, value) {
     const next = new URLSearchParams(searchParams);
@@ -69,6 +71,8 @@ export default function AdminBookings() {
               onBlur={(e) => updateParam("search", e.target.value)}
             />
           </div>
+          <div className="admin-form-field"><label className="otp-label-text" htmlFor="booking-from">From Date</label><input id="booking-from" type="date" className="admin-input" value={from} onChange={e=>updateParam("from",e.target.value)}/></div>
+          <div className="admin-form-field"><label className="otp-label-text" htmlFor="booking-to">To Date</label><input id="booking-to" type="date" className="admin-input" value={to} onChange={e=>updateParam("to",e.target.value)}/></div>
           <div className="admin-form-field">
             <label className="otp-label-text" htmlFor="booking-status">Status</label>
             <select

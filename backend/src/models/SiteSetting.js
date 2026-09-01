@@ -14,9 +14,8 @@ const SiteSettingSchema = new mongoose.Schema(
     phone: { type: String, default: "" },
     email: { type: String, default: "" },
     whatsappNumber: { type: String, default: "" },
-    defaultWhatsappMessage: { type: String, default: "" },
-    bookingWhatsappMessage: { type: String, default: "" },
     logoUrl: { type: String, default: null },
+    logoKey: { type: String, default: null },
     signatureUrl: { type: String, default: null },
     signatureKey: { type: String, default: null },
     authorizedSignatory: {
@@ -29,11 +28,10 @@ const SiteSettingSchema = new mongoose.Schema(
       isDefault: { type: Boolean, default: true },
     },
 
+
     banner: {
       id: { type: String, default: null },
       enabled: { type: Boolean, default: false },
-      imageUrl: { type: String, default: null },
-      imageKey: { type: String, default: null },
       title: { type: String, default: "" },
       message: { type: String, default: "" },
       buttonText: { type: String, default: "" },
@@ -47,11 +45,6 @@ const SiteSettingSchema = new mongoose.Schema(
       applicable: { type: Boolean, default: false },
     },
 
-    bookingSettings: {
-      minAdvanceHours: { type: Number, default: 0 },
-      maxAdvanceDays: { type: Number, default: 180 },
-      holdDurationMinutes: { type: Number, default: 10 },
-    },
 
     cancellationPolicyText: { type: String, default: "" },
     refundPolicyText: { type: String, default: "" },
@@ -64,8 +57,6 @@ const SiteSettingSchema = new mongoose.Schema(
     whyUs: {
       title: { type: String, default: "Why travellers choose Kuwarji Travels" },
       intro: { type: String, default: "Reliable vehicles, clear communication and support from planning to return." },
-      imageUrl: { type: String, default: null },
-      imageKey: { type: String, default: null },
       items: {
         type: [{
           title: { type: String, default: "" },
@@ -90,12 +81,6 @@ const SiteSettingSchema = new mongoose.Schema(
       default: [],
     },
 
-    socialLinks: {
-      facebook: { type: String, default: null },
-      instagram: { type: String, default: null },
-      twitter: { type: String, default: null },
-      youtube: { type: String, default: null },
-    },
   },
   { timestamps: true }
 );

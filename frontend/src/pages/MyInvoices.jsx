@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { apiFetch, API_URL } from "../api.js";
 import ConsumerLayout from "../components/ConsumerLayout.jsx";
 import "./MyBookings.css";
@@ -17,12 +16,6 @@ export default function MyInvoices() {
 
   return (
     <ConsumerLayout title="Invoices" lead="Download your billing documents whenever you need them.">
-        <p className="eyebrow">
-          <Link to="/dashboard" className="my-bookings-back">
-            ← Dashboard
-          </Link>
-        </p>
-
         {loading && <p className="vehicles-state">Loading…</p>}
         {!loading && invoices.length === 0 && (
           <p className="vehicles-state">You don&apos;t have any invoices yet.</p>
@@ -48,8 +41,7 @@ export default function MyInvoices() {
                 <div className="my-booking-meta">
                   <span className={`my-booking-status status-${inv.status.toLowerCase()}`}>{inv.status}</span>
                   <a
-                    className="btn btn-outline btn-sm"
-                    style={{ marginTop: "0.5rem" }}
+                    className="btn btn-outline btn-sm my-invoice-download"
                     href={`${API_URL}/api/invoices/${inv.invoiceNumber}/pdf`}
                     target="_blank"
                     rel="noreferrer"

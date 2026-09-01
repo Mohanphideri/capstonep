@@ -38,14 +38,20 @@ export default function AdminBalanceSheet() {
   }, [load]);
 
   async function markPaid(item) {
-    if (!window.confirm(`Mark ${item.bookingId} for ${item.customer.name} as fully paid?`)) return;
+    if (!window.confirm(`Mark booking ${item.bookingId} as fully paid?`)) return;
     setPayingId(item.id);
     const { ok, data } = await apiFetch(`/api/admin/balance-sheet/${item.id}/mark-paid`, { method: "POST" });
     if (ok && data?.success) {
       setBalances((current) => current.filter((row) => row.id !== item.id));
       setTotalOutstanding((value) => Math.max(0, value - Number(item.balanceAmount || 0)));
     } else {
-      window.alert(data?.error || "Failed to mark as paid.");
+      // A slow request can occasionally get cut off by a network/proxy
+      // timeout even though the update actually went through on the
+      // server a moment later. Rather than leave a stale row that may
+      // already be wrong, re-sync with the server so the list always
+      // reflects the real current state instead of what we last guessed.
+      await load();
+      window.alert((data?.error || "Failed to mark as paid.") + " The list has been refreshed — please check whether it went through before trying again.");
     }
     setPayingId(null);
   }
@@ -65,13 +71,13 @@ export default function AdminBalanceSheet() {
 
       <div className="ticket admin-table-card" style={{ marginBottom: "1rem" }}>
         <div className="admin-form-field">
-          <label className="otp-label-text" htmlFor="balance-search">Search customer / booking</label>
+          <label className="otp-label-text" htmlFor="balance-search">Search booking / phone</label>
           <input
             id="balance-search"
             className="admin-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Booking ID, customer name or phone"
+            placeholder="Booking ID or phone"
           />
         </div>
       </div>
@@ -92,7 +98,6 @@ export default function AdminBalanceSheet() {
               <thead>
                 <tr>
                   <th>Booking ID</th>
-                  <th>Customer</th>
                   <th>Phone</th>
                   <th>Booking Date</th>
                   <th>Total</th>
@@ -105,7 +110,6 @@ export default function AdminBalanceSheet() {
                 {balances.map((item) => (
                   <tr key={item.id}>
                     <td><strong>{item.bookingId}</strong></td>
-                    <td>{item.customer.name}</td>
                     <td>{item.customer.phone}</td>
                     <td>{formatDate(item.bookingDate)}</td>
                     <td>{formatMoney(item.totalAmount)}</td>

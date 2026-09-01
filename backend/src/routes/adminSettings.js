@@ -23,8 +23,6 @@ function serialize(s) {
     phone: s.phone,
     email: s.email,
     whatsappNumber: s.whatsappNumber,
-    defaultWhatsappMessage: s.defaultWhatsappMessage,
-    bookingWhatsappMessage: s.bookingWhatsappMessage,
     logoUrl: s.logoUrl,
     signatureUrl: s.signatureUrl,
     authorizedSignatory: {
@@ -48,7 +46,6 @@ function serialize(s) {
     } : null,
     currency: s.currency,
     gst: s.gst,
-    bookingSettings: s.bookingSettings,
     cancellationPolicyText: s.cancellationPolicyText,
     refundPolicyText: s.refundPolicyText,
     termsText: s.termsText,
@@ -59,7 +56,6 @@ function serialize(s) {
     whyUs: {
       title: s.whyUs?.title || "",
       intro: s.whyUs?.intro || "",
-      imageUrl: s.whyUs?.imageUrl || null,
       items: Array.isArray(s.whyUs?.items) && s.whyUs.items.length ? s.whyUs.items.map((x) => ({ title: x.title || "", body: x.body || "" })) : [
         { title: "Reliable fleet", body: "Well-presented vehicles for local, outstation and group journeys." },
         { title: "Simple trip planning", body: "Tell us your route and requirements and we help match the right vehicle." },
@@ -67,7 +63,6 @@ function serialize(s) {
       ],
     },
     fleetGallery: Array.isArray(s.fleetGallery) ? s.fleetGallery.map((x) => ({ id: x.id, imageUrl: x.imageUrl, categoryId: x.categoryId?.toString?.() || x.categoryId || null, categoryName: x.categoryName || "Other", altText: x.altText || "Kuwarji Travels fleet" })) : [],
-    socialLinks: s.socialLinks,
     updatedAt: s.updatedAt,
   };
 }
@@ -89,11 +84,6 @@ const gstSchema = z.object({
   applicable: z.boolean().optional(),
 });
 
-const bookingSettingsSchema = z.object({
-  minAdvanceHours: z.number().min(0).max(720).optional(),
-  maxAdvanceDays: z.number().min(1).max(730).optional(),
-  holdDurationMinutes: z.number().min(0).max(1440).optional(),
-});
 
 const bannerSchema = z.object({
   id: z.string().trim().max(200).optional(),
@@ -106,12 +96,6 @@ const bannerSchema = z.object({
   altText: z.string().trim().max(300).optional(),
 });
 
-const socialLinksSchema = z.object({
-  facebook: z.string().trim().max(300).nullable().optional(),
-  instagram: z.string().trim().max(300).nullable().optional(),
-  twitter: z.string().trim().max(300).nullable().optional(),
-  youtube: z.string().trim().max(300).nullable().optional(),
-});
 
 // Every field optional — this is always a partial update against the
 // singleton document, never a full replace (so a client only sending
@@ -122,8 +106,6 @@ const updateSchema = z.object({
   phone: z.string().trim().max(30).optional(),
   email: z.string().trim().email().max(150).optional().or(z.literal("")),
   whatsappNumber: z.string().trim().max(30).optional(),
-  defaultWhatsappMessage: z.string().trim().max(500).optional(),
-  bookingWhatsappMessage: z.string().trim().max(500).optional(),
   logoUrl: z.string().trim().max(1000).nullable().optional(),
   signatureUrl: z.string().trim().max(1000).nullable().optional(),
   signatureKey: z.string().trim().max(1000).nullable().optional(),
@@ -139,7 +121,6 @@ const updateSchema = z.object({
   banner: bannerSchema.optional(),
   currency: z.string().trim().max(10).optional(),
   gst: gstSchema.optional(),
-  bookingSettings: bookingSettingsSchema.optional(),
   mapEmbedUrl: z.string().trim().max(2000).optional(),
   whyUs: z.object({
     title: z.string().trim().max(200).optional(),
@@ -148,6 +129,10 @@ const updateSchema = z.object({
   }).optional(),
 });
 
+
+const logoUploadSchema = z.object({ filename: z.string().trim().max(200).optional().default("logo"), mimeType: z.string().trim().min(1), dataBase64: z.string().min(1) });
+router.post("/logo", async (req,res)=>{ try { const parsed=logoUploadSchema.safeParse(req.body); if(!parsed.success)return res.status(400).json({success:false,error:"A valid logo image is required."}); const raw=parsed.data.dataBase64.includes(",")?parsed.data.dataBase64.slice(parsed.data.dataBase64.indexOf(",")+1):parsed.data.dataBase64; const buffer=Buffer.from(raw,"base64"); let validated; try{validated=validateImageUpload({buffer,declaredMimeType:parsed.data.mimeType});}catch(err){if(err instanceof ImageValidationError)return res.status(400).json({success:false,error:err.message});throw err;} await connectToDatabase(); await ensureSiteSettingsSeed(); const settings=await SiteSetting.findOne({key:SETTINGS_KEY}); const storage=getStorageProvider(); const stored=await storage.save({buffer,extension:validated.extension,folder:"settings/logo"}); const oldKey=settings.logoKey; settings.logoUrl=stored.url; settings.logoKey=stored.key; await settings.save(); if(oldKey&&oldKey!==stored.key)await storage.delete(oldKey); await recordAuditLog({req,action:"SITE_LOGO_UPLOADED",entityType:"SiteSetting",entityId:settings._id,metadata:{filename:parsed.data.filename}}); return res.json({success:true,logoUrl:settings.logoUrl}); }catch(err){console.error("admin logo upload error",err);return res.status(500).json({success:false,error:"Failed to upload logo."});} });
+router.delete("/logo", async (req,res)=>{ try { await connectToDatabase(); await ensureSiteSettingsSeed(); const settings=await SiteSetting.findOne({key:SETTINGS_KEY}); const oldKey=settings.logoKey; settings.logoUrl=null; settings.logoKey=null; await settings.save(); if(oldKey)await getStorageProvider().delete(oldKey); await recordAuditLog({req,action:"SITE_LOGO_REMOVED",entityType:"SiteSetting",entityId:settings._id}); return res.json({success:true}); }catch(err){return res.status(500).json({success:false,error:"Failed to remove logo."});} });
 
 const signatureUploadSchema = z.object({
   filename: z.string().trim().max(200).optional().default("signature"),
@@ -222,36 +207,6 @@ async function decodeImage(body) {
   return { parsed: parsed.data, buffer, validated };
 }
 
-router.post("/why-us-image", async (req, res) => {
-  try {
-    const { parsed, buffer, validated } = await decodeImage(req.body);
-    await connectToDatabase(); await ensureSiteSettingsSeed();
-    const settings = await SiteSetting.findOne({ key: SETTINGS_KEY });
-    const storage = getStorageProvider();
-    const stored = await storage.save({ buffer, extension: validated.extension, folder: "why-us" });
-    const oldKey = settings.whyUs?.imageKey;
-    settings.whyUs = { ...(settings.whyUs?.toObject ? settings.whyUs.toObject() : settings.whyUs || {}), imageUrl: stored.url, imageKey: stored.key };
-    await settings.save();
-    if (oldKey && oldKey !== stored.key) await storage.delete(oldKey);
-    await recordAuditLog({ req, action: "WHY_US_IMAGE_UPLOADED", entityType: "SiteSetting", entityId: settings._id, metadata: { filename: parsed.filename } });
-    return res.json({ success: true, imageUrl: stored.url, settings: serialize(settings) });
-  } catch (err) {
-    console.error("why us image upload error", err);
-    return res.status(400).json({ success: false, error: err.message || "Failed to upload Why Us image." });
-  }
-});
-
-router.delete("/why-us-image", async (req, res) => {
-  try {
-    await connectToDatabase(); await ensureSiteSettingsSeed();
-    const settings = await SiteSetting.findOne({ key: SETTINGS_KEY });
-    const oldKey = settings.whyUs?.imageKey;
-    settings.whyUs = { ...(settings.whyUs?.toObject ? settings.whyUs.toObject() : settings.whyUs || {}), imageUrl: null, imageKey: null };
-    await settings.save();
-    if (oldKey) await getStorageProvider().delete(oldKey);
-    return res.json({ success: true });
-  } catch (err) { return res.status(500).json({ success: false, error: "Failed to remove Why Us image." }); }
-});
 
 router.post("/fleet-gallery", async (req, res) => {
   try {
@@ -303,7 +258,7 @@ router.patch("/", async (req, res) => {
     await connectToDatabase();
     await ensureSiteSettingsSeed();
 
-    // Nested objects (gst, bookingSettings, socialLinks) are merged
+    // Nested objects (gst, authorizedSignatory, banner, whyUs) are merged
     // field-by-field with $set on dotted paths, so patching e.g. just
     // gst.applicable never clobbers gst.number.
     const set = {};

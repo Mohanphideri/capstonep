@@ -1,3 +1,4 @@
+import Icon from "./Icon.jsx";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api.js";
@@ -5,12 +6,12 @@ import "./PortalSearch.css";
 
 const ADMIN_SHORTCUTS = [
   ["Dashboard", "/admin"], ["Enquiries", "/admin/enquiries"], ["Bookings", "/admin/bookings"],
-  ["Vehicles", "/admin/vehicles"], ["Fleet Gallery", "/admin/settings/fleetGallery"], ["Tour Packages", "/admin/tour-packages"], ["Customers", "/admin/customers"],
+  ["Vehicles", "/admin/vehicles"], ["Fleet Gallery", "/admin/settings/fleetGallery"], ["Tour Packages", "/admin/tour-packages"],
   ["Reviews", "/admin/reviews"], ["Reports", "/admin/reports"], ["Settings", "/admin/settings/business"],
 ];
 const CUSTOMER_SHORTCUTS = [
   ["Dashboard", "/dashboard"], ["Search Vehicles", "/dashboard/vehicles"], ["Tour Packages", "/dashboard/tour-packages"],
-  ["Trip Maker", "/dashboard/trip-maker"], ["My Bookings", "/dashboard/bookings"], ["My Enquiries", "/dashboard/enquiries"], ["My Reviews", "/dashboard/reviews"],
+  ["My Bookings", "/dashboard/bookings"], ["My Enquiries", "/dashboard/enquiries"], ["My Reviews", "/dashboard/reviews"],
 ];
 
 export default function PortalSearch({ mode = "customer", isSuperAdmin = false }) {
@@ -37,7 +38,6 @@ export default function PortalSearch({ mode = "customer", isSuperAdmin = false }
       const local = shortcuts.filter(([label]) => label.toLowerCase().includes(lower)).map(([label, path]) => ({ type: "shortcut", label, path }));
       const calls = [apiFetch(`/api/vehicles?search=${encodeURIComponent(term)}&limit=5`), apiFetch(`/api/tour-packages?search=${encodeURIComponent(term)}&limit=5`)];
       if (mode === "admin" && isSuperAdmin) {
-        calls.push(apiFetch(`/api/admin/customers?search=${encodeURIComponent(term)}&limit=5`));
         calls.push(apiFetch(`/api/admin/bookings?search=${encodeURIComponent(term)}&limit=5`));
       }
       const responses = await Promise.all(calls);
@@ -47,9 +47,7 @@ export default function PortalSearch({ mode = "customer", isSuperAdmin = false }
       const packages = responses[1];
       if (packages.ok && packages.data?.success) (packages.data.packages || []).forEach(p => out.push({ type: "package", label: p.title, meta: p.destination, path: mode === "admin" ? `/tour-packages/${p.slug || p.id}` : `/dashboard/tour-packages/${p.slug || p.id}` }));
       if (mode === "admin" && isSuperAdmin) {
-        const customers = responses[2];
-        if (customers?.ok && customers.data?.success) (customers.data.customers || []).forEach(c => out.push({ type: "customer", label: c.name || c.phone, meta: c.phone, path: `/admin/customers/${c.id}` }));
-        const bookings = responses[3];
+        const bookings = responses[2];
         if (bookings?.ok && bookings.data?.success) (bookings.data.bookings || []).forEach(b => out.push({ type: "booking", label: b.bookingId, meta: `${b.customer?.name || b.customerSnapshot?.name || "Booking"}`, path: `/admin/bookings/${b.bookingId || b.id}` }));
       }
       setResults(out.slice(0, 8));
@@ -60,7 +58,7 @@ export default function PortalSearch({ mode = "customer", isSuperAdmin = false }
 
   function go(path) { setOpen(false); setQuery(""); navigate(path); }
   return <div className={`portal-search portal-search-${mode}`} ref={ref}>
-    <span className="portal-search-icon" aria-hidden="true">⌕</span>
+    <span className="portal-search-icon"><Icon name="search" size={16}/></span>
     <input value={query} onChange={(e) => { setQuery(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); if (e.key === "Enter" && results[0]) go(results[0].path); }} placeholder={mode === "admin" ? "Search admin, vehicles, bookings…" : "Search vehicles, packages…"} aria-label={mode === "admin" ? "Search admin portal" : "Search customer portal"} />
     {query && <button type="button" className="portal-search-clear" onClick={() => setQuery("")} aria-label="Clear search">×</button>}
     {open && <div className="portal-search-menu">

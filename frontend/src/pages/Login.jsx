@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { OtpLogin } from "../components/OtpLogin.jsx";
 import { RouteLine } from "../components/RouteLine.jsx";
 import "./Login.css";
@@ -7,6 +7,9 @@ import { BrandLogo } from "../components/BrandLogo.jsx";
 export default function Login() {
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get("next");
+  // Default post-login destination is the customer Dashboard, unless they
+  // were sent to log in from a specific page (in which case we return
+  // them there instead).
   const nextPath = rawNext && rawNext.startsWith("/") ? rawNext : "/dashboard";
 
   return (

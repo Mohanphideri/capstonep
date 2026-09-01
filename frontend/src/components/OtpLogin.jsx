@@ -22,6 +22,7 @@ export function OtpLogin({ nextPath = "/" }) {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState("");
 
   const [cooldown, setCooldown] = useState(0);
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_OTP_ATTEMPTS);
@@ -167,6 +168,7 @@ export function OtpLogin({ nextPath = "/" }) {
     }
 
     setLoading(true);
+    setLoadingAction("captcha");
 
     try {
       // Verify CAPTCHA on the server before sending SMS.
@@ -181,20 +183,20 @@ export function OtpLogin({ nextPath = "/" }) {
       );
 
       if (!captchaResult.ok || !captchaResult.data?.success) {
-        setError(
-          captchaResult.data?.error ||
-            "That code didn't match."
-        );
-
+        setLoading(false);
+        setLoadingAction("");
         await loadCaptcha();
+        setError("Incorrect verification code. Please try again.");
         return;
       }
 
+      setLoadingAction("send");
       window.sendOtp(
         `91${digits}`,
 
         () => {
           setLoading(false);
+          setLoadingAction("");
           setStep("otp");
           setOtpDigits(Array(OTP_LENGTH).fill(""));
           setAttemptsLeft(MAX_OTP_ATTEMPTS);
@@ -207,13 +209,15 @@ export function OtpLogin({ nextPath = "/" }) {
 
         (err) => {
           setLoading(false);
-          setError(errorMessage(err));
+          setLoadingAction("");
+          setError(errorMessage(err) || "Unable to send OTP. Please try again.");
           loadCaptcha();
         }
       );
     } catch (error) {
       console.error("Send OTP failed:", error);
       setLoading(false);
+      setLoadingAction("");
       setError("Unable to send OTP. Please try again.");
       loadCaptcha();
     }
@@ -226,12 +230,14 @@ export function OtpLogin({ nextPath = "/" }) {
 
     setError(null);
     setLoading(true);
+    setLoadingAction("resend");
 
     window.retryOtp(
       "text",
 
       () => {
         setLoading(false);
+        setLoadingAction("");
         setOtpDigits(Array(OTP_LENGTH).fill(""));
         startCooldown();
 
@@ -242,7 +248,8 @@ export function OtpLogin({ nextPath = "/" }) {
 
       (err) => {
         setLoading(false);
-        setError(errorMessage(err));
+        setLoadingAction("");
+        setError(errorMessage(err) || "Unable to resend OTP. Please try again.");
       }
     );
   }
@@ -322,6 +329,7 @@ export function OtpLogin({ nextPath = "/" }) {
     }
 
     setLoading(true);
+    setLoadingAction("verify");
 
     window.verifyOtp(
       code,
@@ -333,6 +341,7 @@ export function OtpLogin({ nextPath = "/" }) {
 
           if (!accessToken) {
             setLoading(false);
+            setLoadingAction("");
             setError(
               "Verification did not return a token. Please try again."
             );
@@ -354,6 +363,7 @@ export function OtpLogin({ nextPath = "/" }) {
             !result.data?.success
           ) {
             setLoading(false);
+            setLoadingAction("");
             setError(
               result.data?.error ||
                 "Login failed. Please try again."
@@ -365,19 +375,20 @@ export function OtpLogin({ nextPath = "/" }) {
           await refresh();
 
           setLoading(false);
+          setLoadingAction("");
 
           navigate(nextPath);
         } catch (error) {
           console.error("Authentication failed:", error);
           setLoading(false);
-          setError(
-            "Login failed. Please try again."
-          );
+          setLoadingAction("");
+          setError("Login failed. Please try again.");
         }
       },
 
       (err) => {
         setLoading(false);
+        setLoadingAction("");
 
         setAttemptsLeft((current) =>
           Math.max(0, current - 1)
@@ -387,7 +398,7 @@ export function OtpLogin({ nextPath = "/" }) {
 
         otpRefs.current[0]?.focus();
 
-        setError(errorMessage(err));
+        setError("Incorrect verification code. Please try again.");
       }
     );
   }
@@ -468,7 +479,7 @@ export function OtpLogin({ nextPath = "/" }) {
           <div>
             <div className="otp-captcha-header">
               <span className="otp-label-text">
-                Verification code
+                Enter the security code
               </span>
 
               <button
@@ -506,7 +517,7 @@ export function OtpLogin({ nextPath = "/" }) {
                 autoComplete="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Type the code"
+                placeholder="Enter code shown above"
                 value={captchaAnswer}
                 onChange={(e) =>
                   setCaptchaAnswer(e.target.value)
@@ -537,7 +548,9 @@ export function OtpLogin({ nextPath = "/" }) {
             className="btn btn-primary btn-block"
           >
             {loading
-              ? "Sending OTP…"
+              ? loadingAction === "captcha"
+                ? "Checking code…"
+                : "Sending OTP…"
               : widgetReady
                 ? "Send OTP"
                 : "Loading…"}
@@ -633,7 +646,7 @@ export function OtpLogin({ nextPath = "/" }) {
 
           {loading && (
             <p className="otp-hint">
-              Verifying…
+              {loadingAction === "resend" ? "Sending a new OTP…" : "Verifying OTP…"}
             </p>
           )}
 

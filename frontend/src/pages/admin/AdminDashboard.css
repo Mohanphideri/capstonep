@@ -1,0 +1,4 @@
+
+.admin-note-box{display:flex;flex-direction:column;gap:4px;padding:12px 14px;margin-top:12px;border:1px solid #dce6f3;border-radius:12px;background:#f7faff;color:#53647c}
+.admin-note-box strong{color:#18345f;font-size:.86rem}
+.admin-note-box span{font-size:.74rem;line-height:1.45}

@@ -3,6 +3,7 @@ const { connectToDatabase } = require("../lib/mongodb");
 const { Enquiry } = require("../models/Enquiry");
 const { User } = require("../models/User");
 const { requireAuth } = require("../middleware/requireAuth");
+const { normalizePhone } = require("../lib/msg91");
 
 const router = express.Router();
 
@@ -17,12 +18,14 @@ function serialize(e) {
     enquiryId: e.enquiryId,
     selectedVehicles: (e.selectedVehicles || []).map((v) => v.vehicleSnapshot?.name).filter(Boolean),
     vehicleType: e.vehicleType,
+    package: e.packageSnapshot ? { id: e.packageId?.toString() || null, ...e.packageSnapshot } : null,
     pickupLocation: e.pickupLocation,
     destination: e.destination,
     tripDate: e.tripDate,
     returnDate: e.returnDate,
     passengers: e.passengers,
     status: e.status,
+    customer: { name: e.name, phone: e.phone, email: e.email },
     convertedToBookingId: e.convertedToBookingId ? e.convertedToBookingId.toString() : null,
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
@@ -33,7 +36,7 @@ router.get("/", requireAuth, async (req, res) => {
   try {
     await connectToDatabase();
     const user = await User.findById(req.session.userId).select("phone").lean();
-    const phone = user?.phone || req.session.phone || null;
+    const phone = user?.phone ? normalizePhone(user.phone) : (req.session.phone ? normalizePhone(req.session.phone) : null);
     const ownership = [{ userId: req.session.userId }];
     if (phone) ownership.push({ phone });
     const enquiries = await Enquiry.find({ $or: ownership }).sort({ createdAt: -1 }).lean();
@@ -52,7 +55,7 @@ router.get("/:id", requireAuth, async (req, res) => {
       $or: [{ _id: req.params.id }, { enquiryId: req.params.id }],
     }).lean();
     const ownsByUser = enquiry?.userId && enquiry.userId.toString() === req.session.userId;
-    const ownsByPhone = !!enquiry && !!user?.phone && enquiry.phone === user.phone;
+    const ownsByPhone = !!enquiry && !!user?.phone && enquiry.phone === normalizePhone(user.phone);
     if (!enquiry || (!ownsByUser && !ownsByPhone)) {
       return res.status(404).json({ success: false, error: "Enquiry not found." });
     }
