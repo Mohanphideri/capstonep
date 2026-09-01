@@ -15,37 +15,41 @@ import { HeroIllustration } from "../components/HeroIllustration.jsx";
 import { apiFetch } from "../api.js";
 import "./Home.css";
 
-// Premium rotating headline: the hero swaps between a handful of
-// polished taglines every couple of seconds instead of sitting static.
-// The admin-configured line (if set in Site Content) always leads the
-// rotation, followed by two additional on-brand lines.
-const ROTATING_TAGLINES = [
-  { title: "Book In Minutes.", accent: "Ride In Total Comfort." },
-  { title: "Premium Fleet.", accent: "Punctual, Every Single Time." },
-];
-const HEADLINE_INTERVAL_MS = 2000;
+// Typewriter hero headline.
+const HERO_TAGLINE = "Your journey, our wheels.";
 
-function HeroHeadline({ title, accent }) {
-  const lines = useMemo(() => [{ title, accent }, ...ROTATING_TAGLINES], [title, accent]);
-  const [index, setIndex] = useState(0);
+function HeroHeadline() {
+  const [text, setText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
-    setIndex(0);
-    const timer = setInterval(() => setIndex((i) => (i + 1) % lines.length), HEADLINE_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [lines]);
-  const current = lines[index];
+    let timer;
+    const typingSpeed = deleting ? 55 : 95;
+    const pauseAfterTyping = 1800;
+    const pauseAfterDeleting = 500;
+
+    if (!deleting && text === HERO_TAGLINE) {
+      timer = setTimeout(() => setDeleting(true), pauseAfterTyping);
+    } else if (deleting && text === "") {
+      timer = setTimeout(() => setDeleting(false), pauseAfterDeleting);
+    } else {
+      timer = setTimeout(() => {
+        setText(
+          deleting
+            ? HERO_TAGLINE.slice(0, Math.max(0, text.length - 1))
+            : HERO_TAGLINE.slice(0, text.length + 1)
+        );
+      }, typingSpeed);
+    }
+
+    return () => clearTimeout(timer);
+  }, [text, deleting]);
+
   return (
-    <div className="home-hero-headline">
-      <h1 key={index} className="home-hero-headline-animate">
-        {current.title}
-        <span>{current.accent}</span>
-      </h1>
-      <div className="home-hero-headline-dots" aria-hidden="true">
-        {lines.map((_, i) => (
-          <i key={i} className={i === index ? "is-active" : ""} />
-        ))}
-      </div>
-    </div>
+    <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE}>
+      {text}
+      <span className="home-hero-typewriter-cursor" aria-hidden="true" />
+    </h1>
   );
 }
 
@@ -114,8 +118,7 @@ export default function Home() {
         <div className="container home-hero-modern-inner">
           <div className="home-hero-modern-copy">
             <span className="home-hero-modern-kicker"><Icon name="star" size={14}/> SAFE JOURNEY. HAPPY MEMORIES.</span>
-            <h1>Travel Comfortably.<br />Travel With <em>Confidence.</em></h1>
-            <p>Reliable buses, cars and tempo travellers<br className="desktop-only" /> for local, outstation and group travel.</p>
+            <HeroHeadline />
             <div className="home-hero-modern-actions">
               <Link to="/trip-planner" className="home-modern-btn home-modern-btn-primary">
                 Plan My Trip
