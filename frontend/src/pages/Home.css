@@ -149,7 +149,7 @@
 .home-hero-modern-wash:after{content:"";position:absolute;left:0;top:0;bottom:0;width:46%;background:radial-gradient(circle at 15% 48%,rgba(255,255,255,.95),rgba(255,255,255,.72) 40%,transparent 75%)}
 .home-hero-modern-glow{position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 61%);transform:translateX(-30%);animation:modernHeroShine 8s ease-in-out infinite}
 .home-hero-modern-inner{min-height:590px;display:flex;align-items:center;position:relative;z-index:2}
-.home-hero-modern-copy{width:min(560px,55%);padding:4.5rem 0 5rem;margin-left:-3rem}
+.home-hero-modern-copy{width:min(560px,55%);padding:4.5rem 0 5rem;margin-left:-4.5rem}
 .home-hero-modern-kicker{display:inline-flex;align-items:center;gap:.45rem;padding:.48rem .78rem;border:1px solid #e8edf5;border-radius:999px;background:rgba(255,255,255,.86);box-shadow:0 8px 24px rgba(21,43,75,.07);font-size:.68rem;font-weight:900;letter-spacing:.045em;color:#173b78;animation:modernHeroCopyIn .7s .08s both}
 .home-hero-modern-kicker span{color:#e0301e;font-size:.8rem}
 .home-hero-modern h1{margin:1.35rem 0 0;color:#fff;font-size:clamp(2.2rem,3.3vw,3.7rem);line-height:1.03;letter-spacing:-.05em;font-weight:850;animation:heroTypewriterIn .7s .12s both;opacity:1;transform:none;white-space:nowrap;overflow:hidden;display:block;min-height:1.2em;text-shadow:0 3px 20px rgba(0,0,0,.55),0 1px 4px rgba(0,0,0,.45)}
@@ -502,5 +502,80 @@
 @media (prefers-reduced-motion: reduce) {
   .home-hero-typewriter {
     animation: none !important;
+  }
+}
+
+/* ===== Headline fit + left alignment + button polish (latest request) ===== */
+/* Widen the hero copy column and pull it toward the left edge so the full
+   "Your journey, our wheels." headline fits on one line without being
+   clipped. Button min-height/padding/width and their position in the flow
+   are untouched — only their surface treatment (color/shadow) improves. */
+.home-hero-modern-inner {
+  padding-left: clamp(1rem, 3.2vw, 3rem);
+}
+.home-hero-modern-copy {
+  width: min(820px, 66%);
+}
+.home-hero-typewriter {
+  font-size: clamp(1.85rem, 3.05vw, 3.1rem);
+  overflow: visible;
+}
+@media (max-width: 900px) {
+  .home-hero-modern-copy { width: 100%; }
+  .home-hero-typewriter { font-size: clamp(2.15rem, 7.4vw, 3.6rem); }
+}
+@media (max-width: 560px) {
+  .home-hero-typewriter { font-size: 2.3rem; }
+}
+
+.home-modern-btn {
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+.home-modern-btn-primary {
+  background: linear-gradient(135deg, #ff4f3d 0%, #d7281e 55%, #b91f14 100%);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 14px 30px rgba(183,26,15,.38), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.home-modern-btn-primary:hover {
+  background: linear-gradient(135deg, #ff6a52 0%, #e0301e 55%, #c1230f 100%);
+  box-shadow: 0 18px 36px rgba(183,26,15,.46), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.home-modern-btn-light {
+  background: #ffffff;
+  color: #173b78;
+  border: 1px solid #e3e9f5;
+  box-shadow: 0 10px 26px rgba(15,35,65,.16);
+}
+.home-modern-btn-light:hover {
+  background: #f4f8ff;
+  box-shadow: 0 14px 30px rgba(15,35,65,.2);
+}
+
+/* ===== Legibility fix: keep the headline readable wherever it now sits
+   over the bus photo (wash + shadow extended to match the wider, more
+   left-aligned copy column so the text never looks like it's floating on
+   a mismatched background). ===== */
+.home-hero-modern-wash {
+  background: linear-gradient(
+    100deg,
+    rgba(5,16,36,.86) 0%,
+    rgba(5,16,36,.78) 34%,
+    rgba(5,16,36,.6) 52%,
+    rgba(5,16,36,.32) 68%,
+    rgba(5,16,36,.08) 84%,
+    rgba(5,16,36,0) 96%
+  );
+}
+.home-hero-typewriter {
+  text-shadow: 0 2px 4px rgba(0,0,0,.65), 0 8px 28px rgba(0,0,0,.5);
+}
+.home-hero-modern-copy p {
+  text-shadow: 0 1px 6px rgba(0,0,0,.55);
+}
+@media (max-width: 900px) {
+  .home-hero-modern-wash {
+    background: linear-gradient(180deg, rgba(5,16,36,.78) 0%, rgba(5,16,36,.5) 42%, rgba(5,16,36,.15) 70%, rgba(5,16,36,0) 100%);
   }
 }
