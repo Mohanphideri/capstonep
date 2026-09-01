@@ -695,3 +695,10 @@
   .home-hero-modern-actions .home-modern-btn { animation: none !important; opacity: 1 !important; transform: none !important; }
   .home-modern-btn-primary::after { animation: none !important; }
 }
+
+/* ===== Small positional nudge: copy + buttons up a touch, and a bit
+   further right (still nowhere near center — just off the raw edge). ===== */
+.home-hero-modern .home-hero-modern-inner.home-hero-modern-inner {
+  padding-top: clamp(2.5rem, 7vw, 4.75rem) !important;
+  padding-left: clamp(2rem, 5vw, 4.5rem) !important;
+}
