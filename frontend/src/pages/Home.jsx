@@ -15,30 +15,10 @@ import { HeroIllustration } from "../components/HeroIllustration.jsx";
 import { apiFetch } from "../api.js";
 import "./Home.css";
 
-// Typewriter hero headline.
-const HERO_TAGLINE = "Your journey, our wheels.";
+const HERO_TAGLINE = "Your journey";
 
 function HeroHeadline() {
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    let timer;
-    let index = 0;
-
-    const tick = () => {
-      index += 1;
-      setText(HERO_TAGLINE.slice(0, index));
-
-      if (index < HERO_TAGLINE.length) {
-        timer = setTimeout(tick, 75);
-      }
-    };
-
-    timer = setTimeout(tick, 120);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE}>{text}</h1>;
+  return <h1 className="home-hero-static" aria-label={HERO_TAGLINE}>{HERO_TAGLINE}</h1>;
 }
 
 export default function Home() {
