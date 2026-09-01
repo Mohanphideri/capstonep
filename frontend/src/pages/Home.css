@@ -579,3 +579,63 @@
     background: linear-gradient(180deg, rgba(5,16,36,.78) 0%, rgba(5,16,36,.5) 42%, rgba(5,16,36,.15) 70%, rgba(5,16,36,0) 100%);
   }
 }
+
+/* ===== Two-line headline: "Your journey," / "our wheels." pulled further
+   left, no more single-line clipping, with the second line given a soft
+   accent for hierarchy instead of a flat wall of white text. ===== */
+.home-hero-modern-inner {
+  padding-left: clamp(.75rem, 2.4vw, 2.25rem);
+}
+.home-hero-modern-copy {
+  width: min(640px, 58%);
+}
+.home-hero-typewriter {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+  overflow: visible;
+  font-size: clamp(2.1rem, 3.9vw, 3.85rem);
+  line-height: 1.08;
+  gap: .1em;
+}
+.home-hero-typewriter-line {
+  display: block;
+}
+.home-hero-typewriter-line:last-child {
+  background: linear-gradient(92deg, #ffb199 0%, #ff7a5c 45%, #ffb199 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
+}
+@media (max-width: 900px) {
+  .home-hero-modern-copy { width: 100%; }
+  .home-hero-typewriter { font-size: clamp(2.3rem, 8.5vw, 3.9rem); }
+}
+@media (max-width: 560px) {
+  .home-hero-typewriter { font-size: 2.35rem; }
+}
+
+/* ===== Force hero copy to the true left edge =====
+   The shared ".container" class (defined globally, outside this file)
+   applies its own centered max-width/margin. Because ".home-hero-modern-inner"
+   also carries that class, the copy block was staying boxed inside that
+   centered column instead of sitting at the real left edge of the section.
+   These rules win on specificity/!important regardless of load order. */
+.home-hero-modern .home-hero-modern-inner.home-hero-modern-inner {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  justify-content: flex-start !important;
+  padding-left: clamp(1rem, 3vw, 2.5rem) !important;
+  padding-right: 1rem !important;
+}
+.home-hero-modern-copy {
+  margin: 0 !important;
+  text-align: left !important;
+}
+.home-hero-modern-actions {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}

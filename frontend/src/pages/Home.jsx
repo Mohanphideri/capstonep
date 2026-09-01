@@ -15,7 +15,7 @@ import { HeroIllustration } from "../components/HeroIllustration.jsx";
 import { apiFetch } from "../api.js";
 import "./Home.css";
 
-const HERO_TAGLINE = "Your journey, our wheels.";
+const HERO_TAGLINE = "Your journey,\nour wheels.";
 
 function HeroHeadline() {
   const [text, setText] = useState("");
@@ -37,7 +37,18 @@ function HeroHeadline() {
     return () => clearTimeout(timer);
   }, []);
 
-  return <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE}>{text}</h1>;
+  const lines = text.split("\n");
+
+  return (
+    <h1 className="home-hero-typewriter" aria-label={HERO_TAGLINE.replace("\n", " ")}>
+      {lines.map((line, i) => (
+        <span className="home-hero-typewriter-line" key={i}>
+          {line}
+          {i === 0 && lines.length > 1 ? <br /> : null}
+        </span>
+      ))}
+    </h1>
+  );
 }
 
 export default function Home() {
