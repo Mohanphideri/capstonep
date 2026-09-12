@@ -1,0 +1,240 @@
+const express = require("express");
+const { z } = require("zod");
+const { randomUUID } = require("crypto");
+const { connectToDatabase } = require("../lib/mongodb");
+const { SiteSetting } = require("../models/SiteSetting");
+const { SETTINGS_KEY, ensureSiteSettingsSeed, getSiteSettings } = require("../lib/siteSettings");
+const { requireSuperAdmin } = require("../middleware/requireAuth");
+const { recordAuditLog } = require("../lib/auditLog");
+const { getStorageProvider } = require("../lib/storage/StorageService");
+const { validateImageUpload, ImageValidationError } = require("../lib/imageValidation");
+
+const router = express.Router();
+
+// Business/site configuration is SUPER_ADMIN-only, same as every other
+// admin surface — there is no staff role that can touch this.
+router.use(requireSuperAdmin);
+
+function serialize(s) {
+  return {
+    businessName: s.businessName,
+    address: s.address,
+    phone: s.phone,
+    email: s.email,
+    whatsappNumber: s.whatsappNumber,
+    logoUrl: s.logoUrl,
+    signatureUrl: s.signatureUrl,
+    authorizedSignatory: {
+      fullName: s.authorizedSignatory?.fullName || "",
+      designation: s.authorizedSignatory?.designation || "",
+      department: s.authorizedSignatory?.department || "",
+      email: s.authorizedSignatory?.email || "",
+      phone: s.authorizedSignatory?.phone || "",
+      active: s.authorizedSignatory?.active !== false,
+      isDefault: s.authorizedSignatory?.isDefault !== false,
+    },
+    banner: s.banner ? {
+      id: s.banner.id,
+      enabled: !!s.banner.enabled,
+      imageUrl: s.banner.imageUrl,
+      title: s.banner.title || "",
+      message: s.banner.message || "",
+      buttonText: s.banner.buttonText || "",
+      buttonUrl: s.banner.buttonUrl || "",
+      altText: s.banner.altText || "",
+    } : null,
+    currency: s.currency,
+    gst: s.gst,
+    cancellationPolicyText: s.cancellationPolicyText,
+    refundPolicyText: s.refundPolicyText,
+    termsText: s.termsText,
+    privacyPolicyText: s.privacyPolicyText,
+    bookingPolicyText: s.bookingPolicyText,
+    cookiePolicyText: s.cookiePolicyText,
+    mapEmbedUrl: s.mapEmbedUrl || "",
+    whyUs: {
+      title: s.whyUs?.title || "",
+      intro: s.whyUs?.intro || "",
+      items: Array.isArray(s.whyUs?.items) && s.whyUs.items.length ? s.whyUs.items.map((x) => ({ title: x.title || "", body: x.body || "" })) : [
+        { title: "Reliable fleet", body: "Well-presented vehicles for local, outstation and group journeys." },
+        { title: "Simple trip planning", body: "Tell us your route and requirements and we help match the right vehicle." },
+        { title: "Human support", body: "Get practical help before, during and after your journey." },
+      ],
+    },
+    updatedAt: s.updatedAt,
+  };
+}
+
+// --- Read current settings ---
+router.get("/", async (req, res) => {
+  try {
+    await connectToDatabase();
+    const settings = await ensureSiteSettingsSeed().then(() => getSiteSettings());
+    return res.json({ success: true, settings: serialize(settings) });
+  } catch (err) {
+    console.error("admin settings get error", err);
+    return res.status(500).json({ success: false, error: "Failed to load settings." });
+  }
+});
+
+const gstSchema = z.object({
+  number: z.string().trim().max(30).nullable().optional(),
+  applicable: z.boolean().optional(),
+});
+
+
+const bannerSchema = z.object({
+  id: z.string().trim().max(200).optional(),
+  enabled: z.boolean().optional(),
+  imageUrl: z.string().trim().max(2000).nullable().optional(),
+  title: z.string().trim().max(200).optional(),
+  message: z.string().trim().max(500).optional(),
+  buttonText: z.string().trim().max(100).optional(),
+  buttonUrl: z.string().trim().max(1000).optional(),
+  altText: z.string().trim().max(300).optional(),
+});
+
+
+// Every field optional — this is always a partial update against the
+// singleton document, never a full replace (so a client only sending
+// the fields it edited can never wipe the rest).
+const updateSchema = z.object({
+  businessName: z.string().trim().min(1).max(150).optional(),
+  address: z.string().trim().max(500).optional(),
+  phone: z.string().trim().max(30).optional(),
+  email: z.string().trim().email().max(150).optional().or(z.literal("")),
+  whatsappNumber: z.string().trim().max(30).optional(),
+  logoUrl: z.string().trim().max(1000).nullable().optional(),
+  signatureUrl: z.string().trim().max(1000).nullable().optional(),
+  signatureKey: z.string().trim().max(1000).nullable().optional(),
+  authorizedSignatory: z.object({
+    fullName: z.string().trim().max(150).optional(),
+    designation: z.string().trim().max(150).optional(),
+    department: z.string().trim().max(150).optional(),
+    email: z.string().trim().email().max(150).optional().or(z.literal("")),
+    phone: z.string().trim().max(30).optional(),
+    active: z.boolean().optional(),
+    isDefault: z.boolean().optional(),
+  }).optional(),
+  banner: bannerSchema.optional(),
+  currency: z.string().trim().max(10).optional(),
+  gst: gstSchema.optional(),
+  mapEmbedUrl: z.string().trim().max(2000).optional(),
+  whyUs: z.object({
+    title: z.string().trim().max(200).optional(),
+    intro: z.string().trim().max(1000).optional(),
+    items: z.array(z.object({ title: z.string().trim().max(200), body: z.string().trim().max(2000) })).max(12).optional(),
+  }).optional(),
+});
+
+
+const logoUploadSchema = z.object({ filename: z.string().trim().max(200).optional().default("logo"), mimeType: z.string().trim().min(1), dataBase64: z.string().min(1) });
+router.post("/logo", async (req,res)=>{ try { const parsed=logoUploadSchema.safeParse(req.body); if(!parsed.success)return res.status(400).json({success:false,error:"A valid logo image is required."}); const raw=parsed.data.dataBase64.includes(",")?parsed.data.dataBase64.slice(parsed.data.dataBase64.indexOf(",")+1):parsed.data.dataBase64; const buffer=Buffer.from(raw,"base64"); let validated; try{validated=validateImageUpload({buffer,declaredMimeType:parsed.data.mimeType});}catch(err){if(err instanceof ImageValidationError)return res.status(400).json({success:false,error:err.message});throw err;} await connectToDatabase(); await ensureSiteSettingsSeed(); const settings=await SiteSetting.findOne({key:SETTINGS_KEY}); const storage=getStorageProvider(); const stored=await storage.save({buffer,extension:validated.extension,folder:"settings/logo"}); const oldKey=settings.logoKey; settings.logoUrl=stored.url; settings.logoKey=stored.key; await settings.save(); if(oldKey&&oldKey!==stored.key)await storage.delete(oldKey); await recordAuditLog({req,action:"SITE_LOGO_UPLOADED",entityType:"SiteSetting",entityId:settings._id,metadata:{filename:parsed.data.filename}}); return res.json({success:true,logoUrl:settings.logoUrl}); }catch(err){console.error("admin logo upload error",err);return res.status(500).json({success:false,error:"Failed to upload logo."});} });
+router.delete("/logo", async (req,res)=>{ try { await connectToDatabase(); await ensureSiteSettingsSeed(); const settings=await SiteSetting.findOne({key:SETTINGS_KEY}); const oldKey=settings.logoKey; settings.logoUrl=null; settings.logoKey=null; await settings.save(); if(oldKey)await getStorageProvider().delete(oldKey); await recordAuditLog({req,action:"SITE_LOGO_REMOVED",entityType:"SiteSetting",entityId:settings._id}); return res.json({success:true}); }catch(err){return res.status(500).json({success:false,error:"Failed to remove logo."});} });
+
+const signatureUploadSchema = z.object({
+  filename: z.string().trim().max(200).optional().default("signature"),
+  mimeType: z.string().trim().min(1),
+  dataBase64: z.string().min(1),
+});
+
+router.post("/signature", async (req, res) => {
+  try {
+    const parsed = signatureUploadSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ success: false, error: "A valid signature image is required." });
+    const raw = parsed.data.dataBase64.includes(",") ? parsed.data.dataBase64.slice(parsed.data.dataBase64.indexOf(",") + 1) : parsed.data.dataBase64;
+    const buffer = Buffer.from(raw, "base64");
+    let validated;
+    try {
+      validated = validateImageUpload({ buffer, declaredMimeType: parsed.data.mimeType });
+    } catch (err) {
+      if (err instanceof ImageValidationError) return res.status(400).json({ success: false, error: err.message });
+      throw err;
+    }
+    await connectToDatabase();
+    await ensureSiteSettingsSeed();
+    const settings = await SiteSetting.findOne({ key: SETTINGS_KEY });
+    const storage = getStorageProvider();
+    const stored = await storage.save({ buffer, extension: validated.extension, folder: "settings" });
+    const oldKey = settings.signatureKey;
+    settings.signatureUrl = stored.url;
+    settings.signatureKey = stored.key;
+    await settings.save();
+    if (oldKey && oldKey !== stored.key) await storage.delete(oldKey);
+    await recordAuditLog({ req, action: "SITE_SIGNATURE_UPLOADED", entityType: "SiteSetting", entityId: settings._id, metadata: { filename: parsed.data.filename } });
+    return res.json({ success: true, signatureUrl: settings.signatureUrl });
+  } catch (err) {
+    console.error("admin signature upload error", err);
+    return res.status(500).json({ success: false, error: "Failed to upload signature." });
+  }
+});
+
+router.delete("/signature", async (req, res) => {
+  try {
+    await connectToDatabase();
+    await ensureSiteSettingsSeed();
+    const settings = await SiteSetting.findOne({ key: SETTINGS_KEY });
+    const oldKey = settings.signatureKey;
+    settings.signatureUrl = null;
+    settings.signatureKey = null;
+    await settings.save();
+    if (oldKey) await getStorageProvider().delete(oldKey);
+    await recordAuditLog({ req, action: "SITE_SIGNATURE_REMOVED", entityType: "SiteSetting", entityId: settings._id });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("admin signature delete error", err);
+    return res.status(500).json({ success: false, error: "Failed to remove signature." });
+  }
+});
+
+
+// --- Update settings (partial) ---
+router.patch("/", async (req, res) => {
+  try {
+    const parsed = updateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        error: parsed.error.issues[0]?.message ?? "Invalid settings.",
+      });
+    }
+
+    await connectToDatabase();
+    await ensureSiteSettingsSeed();
+
+    // Nested objects (gst, authorizedSignatory, banner, whyUs) are merged
+    // field-by-field with $set on dotted paths, so patching e.g. just
+    // gst.applicable never clobbers gst.number.
+    const set = {};
+    for (const [key, value] of Object.entries(parsed.data)) {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        for (const [subKey, subValue] of Object.entries(value)) {
+          set[`${key}.${subKey}`] = subValue;
+        }
+      } else {
+        set[key] = value;
+      }
+    }
+
+    const settings = await SiteSetting.findOneAndUpdate(
+      { key: SETTINGS_KEY },
+      { $set: set },
+      { new: true }
+    ).lean();
+
+    await recordAuditLog({
+      req,
+      action: "SITE_SETTINGS_UPDATED",
+      entityType: "SiteSetting",
+      entityId: settings._id,
+      metadata: { fields: Object.keys(parsed.data) },
+    });
+
+    return res.json({ success: true, settings: serialize(settings) });
+  } catch (err) {
+    console.error("admin settings update error", err);
+    return res.status(500).json({ success: false, error: "Failed to update settings." });
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,87 @@
+.kt-global-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(247, 250, 253, 0.78);
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
+
+.kt-loader-bus {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 58px;
+  animation: kt-bus-float 1.15s ease-in-out infinite;
+}
+
+.kt-loader-bus-logo {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgba(23, 59, 143, 0.16));
+}
+
+.kt-loader-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 10px;
+}
+
+.kt-loader-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  opacity: 0.25;
+  animation: kt-dot-cycle 1.05s ease-in-out infinite;
+}
+
+.kt-loader-dots span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.kt-loader-dots span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.kt-loading-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+@keyframes kt-bus-float {
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes kt-dot-cycle {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.8);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  65% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+}

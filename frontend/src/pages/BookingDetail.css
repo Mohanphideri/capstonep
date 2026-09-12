@@ -1,0 +1,209 @@
+.booking-detail-main {
+  padding-bottom: 4rem;
+}
+
+.booking-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.booking-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.booking-detail-section {
+  padding: 1.25rem 1.5rem;
+}
+
+.booking-detail-section p {
+  margin: 0.25rem 0;
+}
+
+.booking-detail-muted {
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+}
+
+.booking-detail-demo-note {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: #a15c00;
+}
+
+.booking-refund-section {
+  margin-bottom: 1.5rem;
+}
+
+.bank-refund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  max-width: 24rem;
+}
+
+.bank-refund-form input {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+}
+
+.booking-detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.booking-cancel-confirm p {
+  margin-bottom: 0.75rem;
+}
+
+.complaint-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 30rem;
+}
+
+.booking-detail-vehicle-row {
+  margin-bottom: 0.75rem;
+}
+
+.booking-detail-invoice-link {
+  margin-top: 0.5rem;
+}
+
+.complaint-form select,
+.complaint-form input,
+.complaint-form textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.price-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+}
+
+.price-row span:last-child {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.price-row-total {
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+  border-top: 1px dashed var(--color-paper-line);
+  font-weight: 700;
+}
+
+.price-row-total span {
+  color: var(--color-ink) !important;
+  font-size: 1rem;
+}
+
+
+
+.booking-detail-title-block { display:flex; flex-direction:column; align-items:flex-start; gap:.25rem; }
+.booking-detail-title-block .dashboard-title { margin:.05rem 0 .25rem; }
+.booking-status-alert { grid-column:1 / -1; display:flex; flex-direction:column; gap:.25rem; padding:1rem 1.2rem; border-radius:14px; border:1px solid var(--color-paper-line); margin-bottom:1.25rem; }
+.booking-status-alert-cancelled { background:rgba(178,46,56,.06); border-color:rgba(178,46,56,.25); color:#8f2730; }
+.booking-status-alert span { font-size:.82rem; color:var(--color-ink-soft); }
+.booking-detail-section-wide { grid-column:1 / -1; }
+.booking-section-heading { display:flex; gap:.75rem; align-items:flex-start; margin-bottom:1rem; }
+.booking-section-heading p { margin:0; }
+.booking-section-heading .vehicle-detail-section-title { margin:.15rem 0 0; }
+.booking-section-kicker { display:grid; place-items:center; width:30px; height:30px; border-radius:10px; background:rgba(36,74,155,.08); color:#244a9b; font-size:.72rem; font-weight:800; flex:0 0 30px; }
+.booking-vehicle-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.75rem; }
+.booking-vehicle-list > div { padding:.85rem 1rem; border:1px solid var(--color-paper-line); border-radius:12px; background:var(--color-paper-raised); }
+.booking-vehicle-list > div p:first-child { font-weight:800; }
+@media(max-width:640px){ .booking-detail-section-wide { grid-column:auto; } .booking-detail-head { align-items:flex-start; } }
+
+.booking-timeline-section { padding: 1.35rem 1.5rem 1.5rem; margin-bottom: 1.5rem; }
+.booking-timeline-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1.1rem; }
+.booking-timeline-head p { margin: 0; }
+.booking-timeline-head strong { font-family: var(--font-display); letter-spacing: 0.02em; }
+
+.booking-timeline { list-style: none; margin: 0 0 1.4rem; padding: 0; display: flex; flex-direction: column; }
+.booking-timeline-step { position: relative; display: flex; align-items: center; gap: 0.75rem; padding: 0.3rem 0 0.3rem 0; min-height: 2.15rem; }
+.booking-timeline-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 1.6rem;
+  bottom: -0.55rem;
+  width: 2px;
+  background: var(--color-paper-line);
+}
+.booking-timeline-step.is-done:not(:last-child)::before { background: var(--color-marigold); }
+
+.booking-timeline-marker {
+  flex: 0 0 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  border: 2px solid var(--color-paper-line);
+  background: var(--color-paper-raised);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  z-index: 1;
+}
+.booking-timeline-step.is-done .booking-timeline-marker {
+  border-color: var(--color-marigold);
+  background: var(--color-marigold);
+}
+.booking-timeline-step.is-active .booking-timeline-marker {
+  border-color: var(--color-blue);
+  background: var(--color-blue);
+  box-shadow: 0 0 0 4px var(--color-blue-tint);
+}
+
+.booking-timeline-label { font-size: 0.9rem; color: var(--color-ink-muted); }
+.booking-timeline-step.is-done .booking-timeline-label { color: var(--color-ink); font-weight: 600; }
+.booking-timeline-step.is-active .booking-timeline-label { color: var(--color-blue); font-weight: 700; }
+
+.booking-timeline-journey { padding-top: 1.1rem; border-top: 1px dashed var(--color-paper-line); }
+.booking-timeline-journey p { margin: 0.2rem 0; }
+.booking-timeline-route { display: flex; align-items: center; gap: 0.45rem; font-family: var(--font-display); font-size: 1.05rem; color: var(--color-ink); flex-wrap: wrap; }
+.booking-timeline-meta { font-size: 0.85rem; color: var(--color-ink-soft); }
+
+@media (max-width: 640px) {
+  .booking-timeline-section { padding: 1.1rem 1.15rem 1.3rem; }
+}
+
+.booking-cancel-action{margin:0 0 1.25rem;display:flex;justify-content:flex-end}
+.booking-cancel-button{border-color:rgba(178,46,56,.3);color:#a22b35}
+.booking-cancel-panel{padding:1.35rem;margin-bottom:1.5rem;border-color:rgba(178,46,56,.2);background:#fffdfd}
+.booking-cancel-panel p{color:var(--color-ink-soft);line-height:1.6}
+.booking-cancel-panel label{font-size:.82rem;font-weight:700;color:var(--color-ink);margin-top:.6rem}
+.booking-cancel-panel input{width:min(320px,100%);padding:.7rem .8rem;border:1px solid var(--color-paper-line);border-radius:10px;margin-top:.45rem;font:inherit}
+
+.booking-cancel-panel{display:grid;gap:10px;padding:20px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff9f9);box-shadow:0 12px 30px rgba(20,35,60,.06)}.booking-cancel-panel h2{margin:0}.booking-cancel-panel label{margin-top:4px}.booking-cancel-panel .booking-detail-actions{margin:4px 0 0}.booking-issues-section{margin-top:1rem}.booking-issue-list{display:grid;gap:12px;margin-top:14px}.booking-issue-card{padding:14px;border:1px solid #e4eaf2;border-radius:14px;background:#fafcfe}.booking-issue-card>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px}.booking-issue-card>div:first-child>strong{font-size:.78rem;color:#2458ad}.booking-issue-card h3{margin:8px 0 5px;font-size:.98rem;color:#172440}.booking-issue-card>p{font-size:.84rem;color:#5f6e84;line-height:1.55}.booking-issue-empty{margin-top:14px;padding:18px;border:1px dashed #d5deea;border-radius:12px;text-align:center;color:#7a8799;font-size:.84rem}.issue-message{margin-top:9px;padding:9px 11px;border-radius:10px;background:#f0f3f7}.issue-message.customer{background:#eef5ff}.issue-message small{display:block;font-size:.68rem;font-weight:800;color:#718096}.issue-message span{display:block;margin-top:3px;font-size:.78rem;color:#40516a;line-height:1.45}.issue-status{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;background:#edf2f7;color:#52627b;font-size:.66rem;font-weight:800;text-transform:uppercase}.issue-open{background:#fff4d8;color:#9a6700}.issue-in_review{background:#eaf1ff;color:#315a9d}.issue-in_progress{background:#e7f0ff;color:#2458ad}.issue-resolved{background:#e7f7ed;color:#177245}.issue-closed{background:#eef0f3;color:#596575}

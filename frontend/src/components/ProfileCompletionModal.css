@@ -1,0 +1,65 @@
+.profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(22, 33, 58, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.profile-modal {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem;
+}
+
+.profile-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.profile-modal-lead {
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.profile-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.profile-modal-field input {
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--color-paper-line);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
+
+.profile-modal-field input:focus {
+  outline: none;
+  border-color: var(--color-marigold);
+  box-shadow: var(--glow-cyan);
+}
+
+.profile-modal-error {
+  font-size: 0.85rem;
+  color: #c8353f;
+  margin: 0;
+}

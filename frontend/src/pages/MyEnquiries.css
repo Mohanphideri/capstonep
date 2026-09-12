@@ -1,0 +1,76 @@
+.enquiry-create-card {
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.enquiry-create-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.enquiry-create-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.enquiry-create-head p {
+  margin: 0.35rem 0 0;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+}
+
+.enquiry-create-form {
+  margin-top: 1.1rem;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.enquiry-create-message {
+  grid-column: 1 / -1;
+}
+
+.enquiry-create-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.enquiry-create-message-text {
+  font-size: 0.85rem;
+  color: #1a7f4b;
+  font-weight: 600;
+}
+
+.enquiry-create-message-text.is-error {
+  color: var(--color-danger, #dc2626);
+}
+
+.enquiry-progress-note {
+  margin-top: 0.5rem;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.enquiry-view-booking-link {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .enquiry-create-card {
+    padding: 1.1rem 1.2rem;
+  }
+  .enquiry-create-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .enquiry-create-footer .btn {
+    width: 100%;
+  }
+}
